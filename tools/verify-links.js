@@ -27,6 +27,8 @@ for (const page of pages) {
   for (const href of hrefs) {
     // 外部・アンカー・ルート絶対パス(/…)は対象外。絶対パスは 404.html が意図的に使う（デプロイ時のみ解決）
     if (/^(https?:|mailto:|tel:|data:|#|\/)/.test(href)) continue;
+    // 動画はデプロイ側 videos/ に配置（社内ソースには置かない＝--exclude videos）。誤検知を避ける。
+    if (/(^|\/)videos\//.test(href) || /\.(mp4|webm|mov)([?#]|$)/i.test(href)) continue;
     checked++;
     let target = href.split('#')[0].split('?')[0];
     if (!target) continue;

@@ -363,7 +363,7 @@ function renderEventPage(tpl, ev, blocks, ctx) {
   var facts = '';
   if (ev.date) facts += '<div class="fact"><dt>Date</dt><dd>' + jpDate(ev) + ' <small>' + esc(ev.day || '') + '</small></dd></div>';
   if (ev.open) facts += '<div class="fact"><dt>Time</dt><dd>' + esc(ev.open) + '<small> — ' + esc(ev.close || '') + '</small></dd></div>';
-  if (ev.venue) facts += '<div class="fact"><dt>Venue</dt><dd>' + esc(ev.venue) + '</dd></div>';
+  if (ev.venue) facts += '<div class="fact"><dt>Venue</dt><dd>' + esc(loc(ev, 'venue', i.lang)) + '</dd></div>';
 
   var heroCta = '';
   if (!past && ev.entryUrl) {
