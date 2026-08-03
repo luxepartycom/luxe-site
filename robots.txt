@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /preview/
+
+Sitemap: https://luxepartycom.github.io/luxe-site/sitemap.xml
