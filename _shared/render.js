@@ -36,17 +36,17 @@ function lines(raw) {
 /* UI文言の対訳表。日本語と英語で共通の骨格を持つ。 */
 var UI_STRINGS = {
   ja: {
-    entry: 'エントリーする', vip: 'VIP予約', pastEvents: '過去のイベント', currentEvent: '開催中のイベント',
+    entry: 'チケットを購入する', vip: 'VIPの詳細はこちら', pastEvents: '過去のイベント', currentEvent: '開催中のイベント',
     prevLabel: '前回のイベント', viewNight: 'この夜を見る', comingSoon: '近日発表',
     attention: '注意事項', privacy: 'プライバシーポリシー', tokusho: '特定商取引法に基づく表記',
     archiveEyebrow: 'Archive', archiveTitle: '過去開催<em>イベント</em>', archiveEmpty: 'まだ記録がありません。',
     switchTo: 'EN', ogLocale: 'ja_JP',
     heldAt: function (d, v) { return d + ' ' + v + ' で開催。'; },
     archiveDesc: '過去に開催したイベントの記録。',
-    archiveSub: function (n) { return n + '回分の記録。タップすると当日のページが開きます。'; }
+    archiveSub: function (n) { return n + '回分の記録。'; }
   },
   en: {
-    entry: 'ENTER', vip: 'VIP', pastEvents: 'Past Events', currentEvent: 'Current Event',
+    entry: 'BUY TICKET', vip: 'VIP DETAILS', pastEvents: 'Past Events', currentEvent: 'Current Event',
     prevLabel: 'Previous Event', viewNight: 'View this night', comingSoon: 'Coming soon',
     attention: 'House Rules', privacy: 'Privacy Policy', tokusho: 'Commercial Transactions',
     archiveEyebrow: 'Archive', archiveTitle: 'Past <em>Events</em>', archiveEmpty: 'No records yet.',
@@ -372,7 +372,7 @@ function renderEventPage(tpl, ev, blocks, ctx) {
   heroCta += '<a class="btn btn-line" href="' + i.langRoot + 'archive/">' + esc(t.pastEvents) + '</a>';
 
   var headerCta = (!past && ev.entryUrl)
-    ? '<a class="cta-mini" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">ENTRY</a>'
+    ? '<a class="cta-mini" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">TICKET</a>'
     : '<a class="cta-mini" href="' + i.langRoot + 'archive/">ARCHIVE</a>';
 
   // 常時表示のCTAバー（開催予定のときだけ・一般エントリー＋VIP）

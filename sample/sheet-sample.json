@@ -9,7 +9,7 @@
     "metaPixelId": "",
     "sns": {
       "instagram": "https://www.instagram.com/luxe_party_tokyo/",
-      "line": "https://page.line.me/179pvefo"
+      "line": "https://lin.ee/zGh0dYy"
     }
   },
   "events": [
@@ -29,7 +29,7 @@
       "lead_en": "A private resort for one night, in the heart of the city.",
       "entryUrl": "https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&type=paid",
       "published": true,
-      "vipUrl": "https://page.line.me/179pvefo",
+      "vipUrl": "https://lin.ee/zGh0dYy",
       "heroVideo": "videos/hero.mp4"
     },
     {
@@ -110,7 +110,7 @@
       "eventId": "2026-08-09-luxe-pool-party",
       "order": 9,
       "type": "entry",
-      "title": "ENTRY|エントリー",
+      "title": "TICKET|チケットのご購入",
       "body": "フリードリンク付。\n20歳未満の方はご入場いただけません。当日は身分証をご持参ください。",
       "link": "https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&type=paid",
       "published": true
