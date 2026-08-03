@@ -8,10 +8,8 @@
     "ga4Id": "",
     "metaPixelId": "",
     "sns": {
-      "instagram": "https://www.instagram.com/your_account",
-      "x": "https://twitter.com/your_account",
-      "tiktok": "https://www.tiktok.com/@your_account",
-      "line": "https://line.me/R/ti/p/@your_account"
+      "instagram": "https://www.instagram.com/luxe_party_tokyo/",
+      "line": "https://page.line.me/179pvefo"
     }
   },
   "events": [
@@ -31,7 +29,7 @@
       "lead_en": "A private resort for one night, in the heart of the city.",
       "entryUrl": "https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&type=paid",
       "published": true,
-      "vipUrl": "https://entry.luxepartytokyo.com/vip-plan.html?e=EV-MS45773V",
+      "vipUrl": "https://page.line.me/179pvefo",
       "heroVideo": "videos/hero.mp4"
     },
     {
@@ -86,7 +84,7 @@
       "order": 7,
       "type": "table",
       "title": "ENTRANCE|入場（フリードリンク付）",
-      "body": "MEN | | ¥20,000 | フリードリンク付\nWOMEN | | ¥5,000 | フリードリンク付\nVIP | | 要問合せ | プールサイドVIP・お問い合わせください",
+      "body": "MEN | | ¥20,000 | フリードリンク付\nWOMEN | | ¥5,000 | フリードリンク付\nVIP | | LINEでご相談 | プールサイドVIP・公式LINEからお問い合わせください",
       "published": true,
       "title_en": "ENTRANCE|Entry (free drinks included)"
     },
@@ -141,7 +139,7 @@
       "title_en": "THE NIGHT|This night — LUXE POOL PARTY",
       "body": "都会の真ん中に現れる、一夜限りのプライベートリゾート。\n東京の夜を知り尽くした、感度の高い大人たちが集う「LUXE POOL PARTY」。\n\n— IBIZA VIBES —\nファッション、音楽、そして特別な出会い。サンセットに染まるプールサイドで、最高峰の音楽に包まれる極上のひとときを。\n\nDRESS CODE — Resort / White / Swimwear",
       "published": true,
-      "image": "detail-01.jpg|LUXE POOL PARTY フライヤー"
+      "image": "https://drive.google.com/file/d/1QqZOz8np21UsQa2hgDZRm8s1u5QxpDz0/view|LUXE POOL PARTY フライヤー"
     }
   ]
 }

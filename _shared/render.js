@@ -103,9 +103,20 @@ function assetUrl(ctx, eventId, file) {
   return hit ? ctx.base + hit : null;
 }
 
+// 画像URLの解決。Google Drive共有URLは表示用サムネイル(w2000)へ、http(s)直リンクはそのまま、
+// それ以外はファイル名として自己ホスト(assets/)を参照。※動画と違い画像はDrive表示が可能。
+function imgUrl(ctx, eventId, file) {
+  var s = String(file || '').trim();
+  if (!s) return null;
+  var m = s.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/) || s.match(/drive\.google\.com\/[^]*[?&]id=([A-Za-z0-9_-]+)/);
+  if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w2000';
+  if (/^https?:\/\//.test(s)) return s;
+  return assetUrl(ctx, eventId, s);
+}
+
 function imgTag(ctx, eventId, raw, cls, lazy) {
   var r = parseImageRef(raw);
-  var url = assetUrl(ctx, eventId, r.file);
+  var url = imgUrl(ctx, eventId, r.file);
   if (!url) return '';
   return '<img src="' + esc(url) + '" alt="' + esc(r.alt) + '"' +
     (cls ? ' class="' + cls + '"' : '') +
@@ -191,7 +202,7 @@ function renderBlocks(blocks, ev, ctx) {
     } else if (type === 'gallery') {
       var items = splitList(b.image).map(function (raw) {
         var r = parseImageRef(raw);
-        var url = assetUrl(ctx, ev.id, r.file);
+        var url = imgUrl(ctx, ev.id, r.file);
         if (!url) return '';
         return '<a href="' + esc(url) + '" target="_blank" rel="noopener">' +
           '<img src="' + esc(url) + '" alt="' + esc(r.alt) + '" loading="lazy" decoding="async"></a>';
@@ -209,7 +220,7 @@ function renderBlocks(blocks, ev, ctx) {
         var name = esc(p[0] || '');
         var role = esc(p[1] || '');
         var url = (p[2] || '').trim();
-        var photoUrl = p[3] ? assetUrl(ctx, ev.id, p[3]) : null;
+        var photoUrl = p[3] ? imgUrl(ctx, ev.id, p[3]) : null;
         var photo = photoUrl
           ? '<span class="artist-photo-wrap"><img class="artist-photo" src="' + esc(photoUrl) + '" alt="' + name + '" loading="lazy" decoding="async"></span>'
           : '';
@@ -297,7 +308,7 @@ function renderBlocks(blocks, ev, ctx) {
         // 動画が無い場合は写真/リンクカード。Instagram投稿があれば外部リンク、無ければ詳細ページ。
         var extLink = (pe.instagram && /^https?:\/\//.test(pe.instagram)) ? pe.instagram : '';
         var pUrl = extLink || (pgLangRoot + 'events/' + pe.id + '/');
-        var pImg = assetUrl(ctx, pe.id, parseImageRef(pe.heroImage || '').file);
+        var pImg = imgUrl(ctx, pe.id, parseImageRef(pe.heroImage || '').file);
         return '<a class="pastcard' + (pImg ? '' : ' pastcard-noimg') + '" href="' + esc(pUrl) + '"' + (extLink ? ' target="_blank" rel="noopener"' : '') + '>' +
           '<span class="pastcard-media">' + (pImg ? '<img src="' + esc(pImg) + '" alt="' + pTtl + '" loading="lazy" decoding="async">' : '') + '</span>' +
           cap + '</a>';
@@ -311,7 +322,7 @@ function renderBlocks(blocks, ev, ctx) {
       if (!pe) return;
       var peLangRoot = ctx.base + (lang === 'en' ? 'en/' : '');
       var peTitle = esc(String(loc(pe, 'title', lang) || '').split('|').join(' '));
-      var peImg = assetUrl(ctx, pe.id, parseImageRef(pe.heroImage || '').file);
+      var peImg = imgUrl(ctx, pe.id, parseImageRef(pe.heroImage || '').file);
       var peLead = esc(loc(pe, 'lead', lang) || '');
       inner = '<a class="prevevent" href="' + esc(peLangRoot + 'events/' + pe.id + '/') + '">' +
         (peImg ? '<span class="prevevent-media"><img src="' + esc(peImg) + '" alt="' + peTitle + '" loading="lazy" decoding="async"></span>' : '') +
@@ -337,8 +348,8 @@ function renderEventPage(tpl, ev, blocks, ctx) {
   var t = i.t;
   var past = isPast(ev, ctx.now);
   var heroRef = parseImageRef(ev.heroImage);
-  var heroUrl = assetUrl(ctx, ev.id, heroRef.file);
-  var ogpUrl = assetUrl(ctx, ev.id, parseImageRef(ev.ogpImage || ev.heroImage).file);
+  var heroUrl = imgUrl(ctx, ev.id, heroRef.file);
+  var ogpUrl = imgUrl(ctx, ev.id, parseImageRef(ev.ogpImage || ev.heroImage).file);
 
   var title = loc(ev, 'title', i.lang) || ctx.siteName;
   var lead = loc(ev, 'lead', i.lang);
@@ -379,7 +390,7 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     '{{CANONICAL}}': esc(i.canonical),
     '{{ROBOTS}}': ctx.noindex ? '<meta name="robots" content="noindex, nofollow">' : '',
     '{{SITE_NAME}}': esc(ctx.siteName),
-    '{{OGP}}': esc(ogpUrl ? ctx.baseUrl + ogpUrl.replace(/^\.*\//, '') : ''),
+    '{{OGP}}': esc(ogpUrl ? (/^https?:\/\//.test(ogpUrl) ? ogpUrl : ctx.baseUrl + ogpUrl.replace(/^\.*\//, '')) : ''),
     '{{BASE}}': ctx.base,
     '{{BRAND_HTML}}': ctx.brandHtml,
     '{{NAV}}': i.nav,
@@ -419,7 +430,7 @@ function renderArchivePage(tpl, events, ctx) {
       return String(b.date).localeCompare(String(a.date));
     }).map(function (ev) {
       var r = parseImageRef(ev.heroImage);
-      var url = assetUrl(ctx, ev.id, r.file);
+      var url = imgUrl(ctx, ev.id, r.file);
       var media = url
         ? '<img src="' + esc(url) + '" alt="' + esc(r.alt) + '" loading="lazy" decoding="async">'
         : '<div style="aspect-ratio:3/4;background:linear-gradient(150deg,var(--smoke),var(--ink))"></div>';
