@@ -313,8 +313,12 @@ function renderBlocks(blocks, ev, ctx) {
           '<span class="pastcard-media">' + (pImg ? '<img src="' + esc(pImg) + '" alt="' + pTtl + '" loading="lazy" decoding="async">' : '') + '</span>' +
           cap + '</a>';
       }).join('') + '</div>' : '';
-      if (!peLead && !peCards) return;
-      inner = peLead + peCards;
+      // b.link があれば「Instagramで詳しく見る」ボタンを末尾に設置
+      var peBtn = b.link
+        ? '<div class="past-more"><a class="btn btn-line" href="' + esc(b.link) + '" target="_blank" rel="noopener">' + (lang === 'en' ? 'See more on Instagram' : 'Instagramで詳しく見る') + '</a></div>'
+        : '';
+      if (!peLead && !peCards && !peBtn) return;
+      inner = peLead + peCards + peBtn;
 
     } else if (type === 'prevevent') {
       // 前回（直近の終了）イベントを自動で差し込むカード。ctx.prevEvent が無ければ描画しない。

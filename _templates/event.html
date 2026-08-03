@@ -60,6 +60,22 @@ var io = new IntersectionObserver(function(es){
   es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
 }, { threshold: .12 });
 document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+
+/* 画像タップで拡大（フライヤー・出演者写真・図版）。リンク済み画像は除外。 */
+(function(){
+  var sel = ".text-flyer, .artist-photo, .figure img";
+  var box = document.createElement("div"); box.className = "lightbox";
+  var big = document.createElement("img"); box.appendChild(big);
+  box.addEventListener("click", function(){ box.classList.remove("open"); });
+  document.body.appendChild(box);
+  document.addEventListener("click", function(e){
+    var img = e.target.closest ? e.target.closest(sel) : null;
+    if(!img || img.tagName !== "IMG" || img.closest("a")) return;
+    e.preventDefault();
+    big.src = img.currentSrc || img.src;
+    box.classList.add("open");
+  });
+})();
 </script>
 </body>
 </html>
