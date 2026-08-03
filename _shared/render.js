@@ -383,7 +383,28 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     ? '<div class="sticky-cta"><div class="scta-inner"><span class="scta-title">' + esc(String(title).split('|')[0].trim()) + '</span><span class="scta-btns">' + stickyBtns + '</span></div></div>'
     : '';
 
+  // 構造化データ（Event schema）＝Google検索のリッチ表示（開催予定のみ）
+  var ogpFull = ogpUrl ? (/^https?:\/\//.test(ogpUrl) ? ogpUrl : ctx.baseUrl + ogpUrl.replace(/^\.*\//, '')) : '';
+  var jsonld = '';
+  if (!past) {
+    var ld = {
+      '@context': 'https://schema.org', '@type': 'Event',
+      name: String(title).split('|').join(' '),
+      startDate: ev.date + (ev.open ? 'T' + ev.open + ':00+09:00' : ''),
+      endDate: ev.date + (ev.close ? 'T' + ev.close + ':00+09:00' : ''),
+      eventStatus: 'https://schema.org/EventScheduled',
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      description: lead || '',
+      organizer: { '@type': 'Organization', name: ctx.siteName, url: ctx.baseUrl }
+    };
+    if (ev.venue) ld.location = { '@type': 'Place', name: ev.venue, address: { '@type': 'PostalAddress', addressLocality: '東京', addressCountry: 'JP' } };
+    if (ogpFull) ld.image = [ogpFull];
+    if (ev.entryUrl) ld.offers = { '@type': 'AggregateOffer', lowPrice: '5000', highPrice: '20000', priceCurrency: 'JPY', url: ev.entryUrl, availability: 'https://schema.org/InStock' };
+    jsonld = '<script type="application/ld+json">' + JSON.stringify(ld).replace(/</g, '\\u003c') + '</script>';
+  }
+
   var map = {
+    '{{JSONLD}}': jsonld,
     '{{LANG}}': i.lang,
     '{{OG_LOCALE}}': i.ogLocale,
     '{{HREFLANG}}': i.hreflang,
