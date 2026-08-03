@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T04:12:16.462Z",
+  "generatedAt": "2026-08-03T04:39:12.142Z",
   "config": {
     "siteName": "LUXE PARTY TOKYO",
     "brandLine1": "LUXE",
@@ -32,7 +32,8 @@
       "lead_en": "A private resort for one night, in the heart of the city.",
       "entryUrl": "https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&type=paid",
       "published": true,
-      "vipUrl": "https://entry.luxepartytokyo.com/vip-plan.html?e=EV-MS45773V"
+      "vipUrl": "https://entry.luxepartytokyo.com/vip-plan.html?e=EV-MS45773V",
+      "heroVideo": "https://drive.google.com/file/d/1Z1t0YTcvNl9_JaBP0whgyQzDxZLmFmds/view?usp=sharing"
     },
     {
       "id": "2026-07-20-luxe-3rd-anniversary",
@@ -40,7 +41,8 @@
       "date": "2026-07-20",
       "venue": "1OAK",
       "instagram": "https://www.instagram.com/p/DbAlr19xche/",
-      "published": true
+      "published": true,
+      "heroVideo": "https://drive.google.com/file/d/1IHxqj0B1cxQm8uzUl-np2hcrlx0iDIoQ/view"
     },
     {
       "id": "2026-04-26-spring-collection",
@@ -49,7 +51,8 @@
       "venue": "恵比寿 LEDIAN Lounge",
       "instagram": "https://www.instagram.com/p/DX3tjLixEfq/",
       "published": true,
-      "day": "SUN"
+      "day": "SUN",
+      "heroVideo": "https://drive.google.com/file/d/1DYTAOZq7eS0LNVnLmoA8Ly4Vrp9NSBM1/view"
     },
     {
       "id": "2026-03-15-luxe-white-party",
@@ -57,7 +60,8 @@
       "date": "2026-03-15",
       "venue": "恵比寿 LEDIAN Lounge",
       "instagram": "https://www.instagram.com/p/DWLzPuNEUOn/",
-      "published": true
+      "published": true,
+      "heroVideo": "https://drive.google.com/file/d/1y65hwJIGtAE_luwpJtei1eRWUzxqnS2n/view"
     },
     {
       "id": "2025-12-20-christmas-party",
@@ -65,7 +69,8 @@
       "date": "2025-12-20",
       "venue": "S TOKYO 西麻布",
       "instagram": "https://www.instagram.com/p/DUdLuQwkgf9/",
-      "published": true
+      "published": true,
+      "heroVideo": "https://drive.google.com/file/d/1B7apfH2C9OZln613Fd6Tu4PyBJCC1ppb/view"
     }
   ],
   "blocks": [
@@ -138,46 +143,6 @@
       "body": "都会の真ん中に現れる、一夜限りのプライベートリゾート。\n東京の夜を知り尽くした、感度の高い大人たちが集う「LUXE POOL PARTY」。\n\n— IBIZA VIBES —\nファッション、音楽、そして特別な出会い。サンセットに染まるプールサイドで、最高峰の音楽に包まれる極上のひとときを。\n\nDRESS CODE — Resort / White / Swimwear",
       "published": true,
       "image": "detail-01.jpg|LUXE POOL PARTY フライヤー"
-    },
-    {
-      "eventId": "2026-08-09-luxe-pool-party",
-      "order": 1,
-      "type": "embed",
-      "title": "MOVIE|今回のイメージ",
-      "link": "https://www.instagram.com/p/DbP_tTbyjak/",
-      "published": true
-    },
-    {
-      "eventId": "2026-07-20-luxe-3rd-anniversary",
-      "order": 1,
-      "type": "embed",
-      "title": "MOVIE|アフタームービー",
-      "link": "https://www.instagram.com/p/DbAlr19xche/",
-      "published": true
-    },
-    {
-      "eventId": "2026-04-26-spring-collection",
-      "order": 1,
-      "type": "embed",
-      "title": "MOVIE|アフタームービー",
-      "link": "https://www.instagram.com/p/DX3tjLixEfq/",
-      "published": true
-    },
-    {
-      "eventId": "2026-03-15-luxe-white-party",
-      "order": 1,
-      "type": "embed",
-      "title": "MOVIE|アフタームービー",
-      "link": "https://www.instagram.com/p/DWLzPuNEUOn/",
-      "published": true
-    },
-    {
-      "eventId": "2025-12-20-christmas-party",
-      "order": 1,
-      "type": "embed",
-      "title": "MOVIE|アフタームービー",
-      "link": "https://www.instagram.com/p/DUdLuQwkgf9/",
-      "published": true
     }
   ],
   "assets": {

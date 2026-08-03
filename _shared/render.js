@@ -137,6 +137,16 @@ function jpDate(ev) {
 }
 
 /* ---------- ブロック描画 ---------- */
+// 動画URLを <video src> 用に整える。Google Drive共有URLは直接再生用(uc?export=download)へ、
+// 直リンク(.mp4/.webm等・自己ホスト)はそのまま。http(s)以外は空（安全）。
+function videoSrc(u) {
+  var s = String(u || '').trim();
+  if (!s) return '';
+  var m = s.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/) || s.match(/drive\.google\.com\/[^]*[?&]id=([A-Za-z0-9_-]+)/);
+  if (m) return 'https://drive.google.com/uc?export=download&id=' + m[1];
+  return /^https?:\/\//.test(s) ? s : '';
+}
+
 // Instagram投稿URL → 埋め込みURL。正規の instagram.com/(p|reel|tv)/CODE のみ許可（不正値はiframe化しない）
 function igEmbedUrl(u) {
   var m = String(u || '').trim().match(/^https?:\/\/(?:www\.)?instagram\.com\/(p|reel|tv)\/([A-Za-z0-9_-]+)/);
@@ -278,7 +288,13 @@ function renderBlocks(blocks, ev, ctx) {
             '<span class="pastcard-date">' + esc(jpDate(pe)) + '</span>' +
             '<span class="pastcard-title">' + pTtl + '</span>' +
           '</div>';
-        // 正規のInstagram投稿URLがあれば埋め込みカード、無ければ写真カード（詳細ページへリンク）
+        // 動画(Drive/直リンク)があれば自動再生リール。次にInstagram埋め込み、無ければ写真カード。
+        var vsrc = videoSrc(pe.heroVideo || pe.video);
+        if (vsrc) {
+          return '<div class="pastcard pastcard-reel">' +
+            '<div class="reel"><video src="' + esc(vsrc) + '" autoplay muted loop playsinline preload="metadata"></video></div>' +
+            cap + '</div>';
+        }
         var igEm = igEmbedUrl(pe.instagram);
         if (igEm) {
           return '<div class="pastcard pastcard-ig">' +
@@ -374,9 +390,11 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     '{{NAV}}': i.nav,
     '{{HEADER_CTA}}': headerCta,
     '{{FOOTER_LINKS}}': i.footer,
-    '{{HERO_MEDIA}}': heroUrl
-      ? '<div class="hero-media"><img src="' + esc(heroUrl) + '" alt="' + esc(heroRef.alt) + '" fetchpriority="high" decoding="async"></div>'
-      : '',
+    '{{HERO_MEDIA}}': (function () {
+      var hv = videoSrc(ev.heroVideo);
+      if (hv) return '<div class="hero-media"><video class="hero-vid" src="' + esc(hv) + '" autoplay muted loop playsinline preload="metadata"' + (heroUrl ? ' poster="' + esc(heroUrl) + '"' : '') + '></video></div>';
+      return heroUrl ? '<div class="hero-media"><img src="' + esc(heroUrl) + '" alt="' + esc(heroRef.alt) + '" fetchpriority="high" decoding="async"></div>' : '';
+    })(),
     '{{ANALYTICS}}': analyticsHtml(ctx),
     '{{ENDED_BADGE}}': past ? '<span class="ended-badge">ENDED</span>' : '',
     '{{EDITION}}': esc(ev.edition || ''),

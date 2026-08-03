@@ -59,6 +59,7 @@ body{overflow-x:hidden}
 .hero-media{position:absolute; inset:0; z-index:0}
 .hero-media img{width:100%; height:100%; object-fit:cover; opacity:.5;
   transform:scale(1.12); animation:kenburns 20s cubic-bezier(.2,.6,.2,1) forwards}
+.hero-media video.hero-vid{width:100%; height:100%; object-fit:cover; opacity:.62; display:block}
 @keyframes kenburns{ to{ transform:scale(1) } }
 .hero-media::after{content:""; position:absolute; inset:0;
   background:linear-gradient(to top, var(--ink) 4%, rgba(11,10,16,.35) 48%, rgba(11,10,16,.72) 100%)}
@@ -151,6 +152,11 @@ body{overflow-x:hidden}
 /* Instagram埋め込み（縦型・カード型） */
 .embed.embed-ig{position:static; aspect-ratio:auto; max-width:460px; margin-inline:auto; height:660px; border:0}
 .embed.embed-ig iframe{position:static; width:100%; height:100%; background:#fff}
+/* 過去イベントの自動再生リール（9:16・object-fit:coverで歪みなし） */
+.pastcard-reel{border:1px solid var(--line); background:#000; overflow:hidden; transition:border-color .3s}
+.pastcard-reel:hover{border-color:rgba(216,178,106,.5)}
+.reel{position:relative; width:100%; aspect-ratio:9/16; overflow:hidden; background:#000}
+.reel video{width:100%; height:100%; object-fit:cover; display:block}
 .pastcard-ig{border:1px solid var(--line); background:#0d0d0d; overflow:hidden}
 .ig-embed{width:100%; height:600px; overflow:hidden; background:#000}
 .ig-embed iframe{width:100%; height:100%; border:0; display:block; background:#fff}
