@@ -62,6 +62,11 @@ function write(rel, html) {
   console.log('  wrote', rel, '(' + Math.round(html.length / 1024) + 'KB)');
 }
 
+// 生成ディレクトリを一旦クリーン（削除済みイベントの残骸ページを残さない）
+['events', 'en', 'archive'].forEach(function (d) {
+  try { fs.rmSync(path.join(ROOT, d), { recursive: true, force: true }); } catch (e) {}
+});
+
 console.log('building…');
 
 /* 言語ごとにサイト一式を生成する。ja はルート、en は /en/ 配下。
