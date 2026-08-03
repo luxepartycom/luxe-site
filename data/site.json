@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T06:58:17.496Z",
+  "generatedAt": "2026-08-03T09:43:29.100Z",
   "config": {
     "siteName": "LUXE PARTY TOKYO",
     "brandLine1": "LUXE",
@@ -44,7 +44,7 @@
     },
     {
       "id": "2026-04-26-spring-collection",
-      "title": "SPRING COLLECTION",
+      "title": "Luxe Spring Collection 2026",
       "date": "2026-04-26",
       "venue": "恵比寿 LEDIAN Lounge",
       "instagram": "https://www.instagram.com/p/DX3tjLixEfq/",
@@ -54,7 +54,7 @@
     },
     {
       "id": "2026-03-15-luxe-white-party",
-      "title": "LUXE WHITE PARTY",
+      "title": "White Dress Code Night",
       "date": "2026-03-15",
       "venue": "恵比寿 LEDIAN Lounge",
       "instagram": "https://www.instagram.com/p/DWLzPuNEUOn/",
@@ -63,7 +63,7 @@
     },
     {
       "id": "2025-12-20-christmas-party",
-      "title": "CHRISTMAS PARTY",
+      "title": "Luxe Christmas Party 2025",
       "date": "2025-12-20",
       "venue": "S TOKYO 西麻布",
       "instagram": "https://www.instagram.com/p/DUdLuQwkgf9/",
@@ -137,9 +137,9 @@
       "eventId": "2026-08-09-luxe-pool-party",
       "order": 5,
       "type": "text",
-      "title": "THE NIGHT|今回の一夜 — LUXE POOL PARTY",
-      "title_en": "THE NIGHT|This night — LUXE POOL PARTY",
-      "body": "都会の真ん中に現れる、一夜限りのプライベートリゾート。\n東京の夜を知り尽くした、感度の高い大人たちが集う「LUXE POOL PARTY」。\n\n— IBIZA VIBES —\nファッション、音楽、そして特別な出会い。サンセットに染まるプールサイドで、最高峰の音楽に包まれる極上のひとときを。\n\nDRESS CODE — Resort / White / Swimwear",
+      "title": "THE NIGHT|次回開催 — LUXE POOL PARTY",
+      "title_en": "THE NIGHT|Next Event — LUXE POOL PARTY",
+      "body": "8月9日（日）— LUXE POOL PARTY\n歌舞伎町タワー5F・プールエリアにて開催。\n\nサンセットに染まるプールサイドで、ファッション・音楽・特別な出会いが交わる一夜。最高峰の音楽に包まれる極上のひとときを。\n\nDRESS CODE — Resort / White / Swimwear",
       "published": true,
       "image": "https://drive.google.com/file/d/1QqZOz8np21UsQa2hgDZRm8s1u5QxpDz0/view|LUXE POOL PARTY フライヤー"
     }

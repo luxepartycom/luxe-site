@@ -39,17 +39,17 @@ var UI_STRINGS = {
     entry: 'エントリーする', vip: 'VIP予約', pastEvents: '過去のイベント', currentEvent: '開催中のイベント',
     prevLabel: '前回のイベント', viewNight: 'この夜を見る', comingSoon: '近日発表',
     attention: '注意事項', privacy: 'プライバシーポリシー', tokusho: '特定商取引法に基づく表記',
-    archiveEyebrow: 'Archive', archiveTitle: 'これまでの<em>夜</em>', archiveEmpty: 'まだ記録がありません。',
+    archiveEyebrow: 'Archive', archiveTitle: '過去開催<em>イベント</em>', archiveEmpty: 'まだ記録がありません。',
     switchTo: 'EN', ogLocale: 'ja_JP',
     heldAt: function (d, v) { return d + ' ' + v + ' で開催。'; },
-    archiveDesc: 'これまでに開催したイベントの記録。',
-    archiveSub: function (n) { return n + '回分の記録。写真をタップすると当日のページが開きます。'; }
+    archiveDesc: '過去に開催したイベントの記録。',
+    archiveSub: function (n) { return n + '回分の記録。タップすると当日のページが開きます。'; }
   },
   en: {
     entry: 'ENTER', vip: 'VIP', pastEvents: 'Past Events', currentEvent: 'Current Event',
     prevLabel: 'Previous Event', viewNight: 'View this night', comingSoon: 'Coming soon',
     attention: 'House Rules', privacy: 'Privacy Policy', tokusho: 'Commercial Transactions',
-    archiveEyebrow: 'Archive', archiveTitle: 'Nights <em>so far</em>', archiveEmpty: 'No records yet.',
+    archiveEyebrow: 'Archive', archiveTitle: 'Past <em>Events</em>', archiveEmpty: 'No records yet.',
     switchTo: '日本語', ogLocale: 'en_US',
     heldAt: function (d, v) { return d + (v ? ' at ' + v : '') + '.'; },
     archiveDesc: 'A record of every night we have held.',
