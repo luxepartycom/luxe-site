@@ -226,6 +226,8 @@ footer{padding:60px var(--pad) 48px; border-top:1px solid var(--line); font-size
 .pastcard-media{display:block; aspect-ratio:3/4; overflow:hidden; background:var(--velvet)}
 .pastcard-media img{width:100%; height:100%; object-fit:cover; display:block; opacity:.72; transition:transform .7s ease, opacity .5s}
 .pastcard:hover .pastcard-media img{transform:scale(1.05); opacity:1}
+.pastcard-noimg .pastcard-media{background:linear-gradient(150deg,var(--velvet),var(--ink)); position:relative}
+.pastcard-noimg .pastcard-media::after{content:"▶"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; color:rgba(233,221,201,.6)}
 .pastcard-cap{display:block; padding:16px 18px 18px}
 .pastcard-date{display:block; font-family:var(--util); font-size:10px; letter-spacing:.22em; color:var(--champagne)}
 .pastcard-title{display:block; font-family:var(--display); font-size:clamp(19px,2.4vw,24px); line-height:1.22; margin-top:5px}

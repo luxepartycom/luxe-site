@@ -32,7 +32,7 @@
       "entryUrl": "https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&type=paid",
       "published": true,
       "vipUrl": "https://entry.luxepartytokyo.com/vip-plan.html?e=EV-MS45773V",
-      "heroVideo": "https://drive.google.com/file/d/1Z1t0YTcvNl9_JaBP0whgyQzDxZLmFmds/view?usp=sharing"
+      "heroVideo": "videos/hero.mp4"
     },
     {
       "id": "2026-07-20-luxe-3rd-anniversary",
@@ -41,7 +41,7 @@
       "venue": "1OAK",
       "instagram": "https://www.instagram.com/p/DbAlr19xche/",
       "published": true,
-      "heroVideo": "https://drive.google.com/file/d/1IHxqj0B1cxQm8uzUl-np2hcrlx0iDIoQ/view"
+      "heroVideo": "videos/past-3rd.mp4"
     },
     {
       "id": "2026-04-26-spring-collection",
@@ -51,7 +51,7 @@
       "instagram": "https://www.instagram.com/p/DX3tjLixEfq/",
       "published": true,
       "day": "SUN",
-      "heroVideo": "https://drive.google.com/file/d/1DYTAOZq7eS0LNVnLmoA8Ly4Vrp9NSBM1/view"
+      "heroVideo": "videos/past-spring.mp4"
     },
     {
       "id": "2026-03-15-luxe-white-party",
@@ -60,7 +60,7 @@
       "venue": "恵比寿 LEDIAN Lounge",
       "instagram": "https://www.instagram.com/p/DWLzPuNEUOn/",
       "published": true,
-      "heroVideo": "https://drive.google.com/file/d/1y65hwJIGtAE_luwpJtei1eRWUzxqnS2n/view"
+      "heroVideo": "videos/past-white.mp4"
     },
     {
       "id": "2025-12-20-christmas-party",
@@ -69,7 +69,7 @@
       "venue": "S TOKYO 西麻布",
       "instagram": "https://www.instagram.com/p/DUdLuQwkgf9/",
       "published": true,
-      "heroVideo": "https://drive.google.com/file/d/1B7apfH2C9OZln613Fd6Tu4PyBJCC1ppb/view"
+      "heroVideo": "videos/past-christmas.mp4"
     }
   ],
   "blocks": [

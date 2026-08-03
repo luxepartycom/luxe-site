@@ -139,12 +139,11 @@ function jpDate(ev) {
 /* ---------- ブロック描画 ---------- */
 // 動画URLを <video src> 用に整える。Google Drive共有URLは直接再生用(uc?export=download)へ、
 // 直リンク(.mp4/.webm等・自己ホスト)はそのまま。http(s)以外は空（安全）。
-function videoSrc(u) {
+function videoSrc(u, base) {
   var s = String(u || '').trim();
-  if (!s) return '';
-  var m = s.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/) || s.match(/drive\.google\.com\/[^]*[?&]id=([A-Za-z0-9_-]+)/);
-  if (m) return 'https://drive.google.com/uc?export=download&id=' + m[1];
-  return /^https?:\/\//.test(s) ? s : '';
+  if (!s || /^(javascript|data|vbscript):/i.test(s)) return '';
+  if (/^https?:\/\//.test(s)) return s;          // 外部直リンク（mp4等）
+  return (base || '') + s.replace(/^\/+/, '');    // サイト内相対パス（videos/xxx.mp4）
 }
 
 // Instagram投稿URL → 埋め込みURL。正規の instagram.com/(p|reel|tv)/CODE のみ許可（不正値はiframe化しない）
@@ -289,21 +288,17 @@ function renderBlocks(blocks, ev, ctx) {
             '<span class="pastcard-title">' + pTtl + '</span>' +
           '</div>';
         // 動画(Drive/直リンク)があれば自動再生リール。次にInstagram埋め込み、無ければ写真カード。
-        var vsrc = videoSrc(pe.heroVideo || pe.video);
+        var vsrc = videoSrc(pe.heroVideo || pe.video, ctx.base);
         if (vsrc) {
           return '<div class="pastcard pastcard-reel">' +
             '<div class="reel"><video src="' + esc(vsrc) + '" autoplay muted loop playsinline preload="metadata"></video></div>' +
             cap + '</div>';
         }
-        var igEm = igEmbedUrl(pe.instagram);
-        if (igEm) {
-          return '<div class="pastcard pastcard-ig">' +
-            '<div class="ig-embed"><iframe src="' + esc(igEm) + '" loading="lazy" title="' + pTtl + '" scrolling="no" frameborder="0"></iframe></div>' +
-            cap + '</div>';
-        }
-        var pUrl = pgLangRoot + 'events/' + pe.id + '/';
+        // 動画が無い場合は写真/リンクカード。Instagram投稿があれば外部リンク、無ければ詳細ページ。
+        var extLink = (pe.instagram && /^https?:\/\//.test(pe.instagram)) ? pe.instagram : '';
+        var pUrl = extLink || (pgLangRoot + 'events/' + pe.id + '/');
         var pImg = assetUrl(ctx, pe.id, parseImageRef(pe.heroImage || '').file);
-        return '<a class="pastcard" href="' + esc(pUrl) + '">' +
+        return '<a class="pastcard' + (pImg ? '' : ' pastcard-noimg') + '" href="' + esc(pUrl) + '"' + (extLink ? ' target="_blank" rel="noopener"' : '') + '>' +
           '<span class="pastcard-media">' + (pImg ? '<img src="' + esc(pImg) + '" alt="' + pTtl + '" loading="lazy" decoding="async">' : '') + '</span>' +
           cap + '</a>';
       }).join('') + '</div>' : '';
@@ -391,7 +386,7 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     '{{HEADER_CTA}}': headerCta,
     '{{FOOTER_LINKS}}': i.footer,
     '{{HERO_MEDIA}}': (function () {
-      var hv = videoSrc(ev.heroVideo);
+      var hv = videoSrc(ev.heroVideo, ctx.base);
       if (hv) return '<div class="hero-media"><video class="hero-vid" src="' + esc(hv) + '" autoplay muted loop playsinline preload="metadata"' + (heroUrl ? ' poster="' + esc(heroUrl) + '"' : '') + '></video></div>';
       return heroUrl ? '<div class="hero-media"><img src="' + esc(heroUrl) + '" alt="' + esc(heroRef.alt) + '" fetchpriority="high" decoding="async"></div>' : '';
     })(),
