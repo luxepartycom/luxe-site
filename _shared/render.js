@@ -435,9 +435,12 @@ function renderArchivePage(tpl, events, ctx) {
     }).map(function (ev) {
       var r = parseImageRef(ev.heroImage);
       var url = imgUrl(ctx, ev.id, r.file);
-      var media = url
-        ? '<img src="' + esc(url) + '" alt="' + esc(r.alt) + '" loading="lazy" decoding="async">'
-        : '<div style="aspect-ratio:3/4;background:linear-gradient(150deg,var(--smoke),var(--ink))"></div>';
+      var vsrc = videoSrc(ev.heroVideo, ctx.base);
+      var media = vsrc
+        ? '<video src="' + esc(vsrc) + '" autoplay muted loop playsinline preload="metadata"></video>'
+        : url
+          ? '<img src="' + esc(url) + '" alt="' + esc(r.alt) + '" loading="lazy" decoding="async">'
+          : '<div style="aspect-ratio:3/4;background:linear-gradient(150deg,var(--smoke),var(--ink))"></div>';
       return '<a class="wall-card" href="' + i.langRoot + 'events/' + esc(ev.id) + '/">' + media +
         '<span class="wall-meta"><span class="wall-date">' + jpDate(ev) + '</span>' +
         '<span class="wall-title">' + esc(String(loc(ev, 'title', i.lang) || '').replace('|', ' ')) + '</span></span></a>';

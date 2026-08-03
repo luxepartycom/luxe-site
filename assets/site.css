@@ -165,7 +165,7 @@ body{overflow-x:hidden}
 /* archive wall */
 .wall{display:grid; gap:14px; grid-template-columns:repeat(auto-fill, minmax(240px,1fr))}
 .wall-card{position:relative; display:block; border:1px solid var(--line); overflow:hidden; background:var(--smoke)}
-.wall-card img{aspect-ratio:3/4; object-fit:cover; width:100%; opacity:.6; transition:opacity .5s, transform .8s}
+.wall-card img, .wall-card video{aspect-ratio:3/4; object-fit:cover; width:100%; display:block; opacity:.72; transition:opacity .5s, transform .8s}
 .wall-card:hover img{opacity:.95; transform:scale(1.04)}
 .wall-meta{position:absolute; inset:auto 0 0 0; padding:18px 18px 16px;
   background:linear-gradient(to top, rgba(11,10,16,.94), transparent)}
