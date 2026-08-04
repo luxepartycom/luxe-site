@@ -89,9 +89,10 @@ body{overflow-x:hidden}
 .btn:hover{transform:translateY(-2px)}
 .ended-badge{display:inline-block; font-family:var(--util); font-size:10px; letter-spacing:.24em;
   border:1px solid var(--line); border-radius:100px; padding:6px 14px; margin-bottom:18px; opacity:.75}
-.invite-badge{display:inline-block; font-family:var(--util); font-size:10px; letter-spacing:.24em;
-  border:1px solid var(--champagne); color:var(--champagne); border-radius:100px; padding:6px 14px; margin-bottom:18px}
-.invite-badge span{opacity:.7; letter-spacing:.2em}
+.invite-badge{display:inline-block; font-family:var(--util); font-size:13px; font-weight:700; letter-spacing:.16em;
+  background:var(--champagne); color:var(--ink); border-radius:100px; padding:10px 22px; margin-bottom:20px;
+  box-shadow:0 6px 22px rgba(216,178,106,.4)}
+.invite-badge span{font-weight:500; opacity:.72; letter-spacing:.12em}
 
 /* blocks */
 /* 画像ブロックは全幅シネマティック表示。スクロールで入るとゆっくり収まるズーム。 */
