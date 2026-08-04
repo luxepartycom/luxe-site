@@ -129,7 +129,7 @@
     /* 各動画に右端固定の音声ボタンを付与（動画ごとに音声を選べる） */
     for(var j=0;j<vids.length;j++){ (function(v){
       var btn = document.createElement("button");
-      btn.type="button"; btn.className="vid-sound"; btn.innerHTML=ICON_OFF;
+      btn.type="button"; btn.className="vid-sound" + (v===hero ? " vid-sound-hero" : ""); btn.innerHTML=ICON_OFF;
       btn.setAttribute("aria-label","この動画の音声のオン・オフ"); btn.setAttribute("aria-pressed","false");
       btn.addEventListener("click", function(ev){ ev.stopPropagation(); if(cur===v){ muteAll(); } else { setAudio(v); } });
       /* ヒーローは overlay コンテンツの上に出すため section 直下、それ以外はリール/ウォールの器に配置 */
@@ -138,15 +138,10 @@
       v._sb = btn;
     })(vids[j]); }
 
-    /* ヒーロー：読込時に音声つき自動再生を試行＋スクロールアウトで停止 */
-    if(hero){
-      hero.muted = false;
-      var hp = hero.play && hero.play();
-      if(hp && hp.then){ hp.then(function(){ setAudio(hero); }).catch(function(){ hero.muted = true; }); }
-      else { setAudio(hero); }
-      if("IntersectionObserver" in window){
-        new IntersectionObserver(function(es){ es.forEach(function(e){ if(!e.isIntersecting && cur===hero){ muteAll(); } }); }, { threshold:0.2 }).observe(hero);
-      }
+    /* ヒーローは HTML属性(autoplay muted playsinline)で無音自動再生（スマホでも確実に再生）。
+       音声つき自動再生はブラウザが禁止＝再生を壊さないため音声はボタン起点。スクロールアウトで音声停止のみ。 */
+    if(hero && "IntersectionObserver" in window){
+      new IntersectionObserver(function(es){ es.forEach(function(e){ if(!e.isIntersecting && cur===hero){ muteAll(); } }); }, { threshold:0.2 }).observe(hero);
     }
   })();
 })();

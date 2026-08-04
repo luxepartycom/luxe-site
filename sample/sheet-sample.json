@@ -93,6 +93,13 @@
     },
     {
       "eventId": "2026-08-09-luxe-pool-party",
+      "order": 7.5,
+      "type": "image",
+      "image": "https://drive.google.com/file/d/1wDoLtDEiwM7ur3_iXhwmHuh4-w_CIjHi/view|LUXE POOL PARTY",
+      "published": true
+    },
+    {
+      "eventId": "2026-08-09-luxe-pool-party",
       "order": 2,
       "type": "pastevents",
       "title": "CONCEPT|Fashion × Music × Luxury",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T11:07:35.369Z",
+  "generatedAt": "2026-08-04T11:56:24.940Z",
   "config": {
     "siteName": "LUXE PARTY TOKYO",
     "brandLine1": "LUXE",
@@ -91,6 +91,13 @@
       "published": true,
       "title_en": "ENTRANCE|Entry (free drinks included)",
       "body_en": "MEN | | ¥20,000 | Free drinks included\nWOMEN | | ¥5,000 | Free drinks included\nVIP | | Ask on LINE | Poolside VIP — please inquire via our official LINE"
+    },
+    {
+      "eventId": "2026-08-09-luxe-pool-party",
+      "order": 7.5,
+      "type": "image",
+      "image": "https://drive.google.com/file/d/1wDoLtDEiwM7ur3_iXhwmHuh4-w_CIjHi/view|LUXE POOL PARTY",
+      "published": true
     },
     {
       "eventId": "2026-08-09-luxe-pool-party",

@@ -437,5 +437,6 @@ header.scrolled{padding-top:11px; padding-bottom:11px; border-bottom-color:var(-
 .vid-sound:hover{opacity:1; transform:scale(1.08); background:rgba(11,10,16,.72)}
 .vid-sound:focus-visible{outline:1px solid var(--champagne); outline-offset:3px}
 .vid-sound svg{display:block}
+.vid-sound-hero{top:calc(72px + env(safe-area-inset-top, 0px))} /* ヒーローは固定ヘッダーの下に出す（隠れ防止） */
 .reel video, .wall-card video{cursor:pointer}
 video[data-audio="on"]{outline:1px solid rgba(216,178,106,.55); outline-offset:-1px}
