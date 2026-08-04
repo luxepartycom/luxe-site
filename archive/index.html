@@ -81,21 +81,29 @@
     document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("in"); });
   }
 
-  /* 動画音声：常に1つだけ再生（他は自動ミュート）。リール等=タップで音声トグル。 */
+  /* 動画音声：動画ごとに右端固定の音声ボタン。鳴らせるのは常に1つだけ（他は自動ミュート）。 */
   (function(){
     var vids = Array.prototype.slice.call(document.querySelectorAll("video"));
     if(!vids.length) return;
     var cur = null;
+    var ICON_OFF = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h3.4L12 18.5V5.5L7.4 9H4z" fill="currentColor" stroke="none"/><line x1="16.5" y1="9.5" x2="21" y2="14.5"/><line x1="21" y1="9.5" x2="16.5" y2="14.5"/></svg>';
+    var ICON_ON  = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h3.4L12 18.5V5.5L7.4 9H4z" fill="currentColor" stroke="none"/><path d="M16.5 9.2a3.6 3.6 0 0 1 0 5.6"/><path d="M19 6.8a7.2 7.2 0 0 1 0 10.4"/></svg>';
+    function refresh(){ for(var i=0;i<vids.length;i++){ var b=vids[i]._sb; if(b){ var on=(vids[i]===cur); b.setAttribute("aria-pressed",on?"true":"false"); b.innerHTML = on?ICON_ON:ICON_OFF; } } }
     function setAudio(v){
       for(var i=0;i<vids.length;i++){ if(vids[i]!==v){ vids[i].muted = true; vids[i].removeAttribute("data-audio"); } }
       if(v){ v.muted = false; try{ var p = v.play(); if(p && p.catch) p.catch(function(){}); }catch(e){} v.setAttribute("data-audio","on"); }
-      cur = v || null;
+      cur = v || null; refresh();
     }
     function muteAll(){ setAudio(null); }
     window.__luxeAudio = { set:setAudio, muteAll:muteAll, current:function(){ return cur; } };
     for(var j=0;j<vids.length;j++){ (function(v){
-      v.style.cursor="pointer";
-      v.addEventListener("click", function(){ if(cur===v){ muteAll(); } else { setAudio(v); } });
+      var btn = document.createElement("button");
+      btn.type="button"; btn.className="vid-sound"; btn.innerHTML=ICON_OFF;
+      btn.setAttribute("aria-label","この動画の音声のオン・オフ"); btn.setAttribute("aria-pressed","false");
+      btn.addEventListener("click", function(ev){ ev.stopPropagation(); if(cur===v){ muteAll(); } else { setAudio(v); } });
+      var host = v.closest(".reel, .wall-card") || v.parentNode;
+      if(host){ if(window.getComputedStyle && getComputedStyle(host).position==="static") host.style.position="relative"; host.appendChild(btn); }
+      v._sb = btn;
     })(vids[j]); }
   })();
 })();
