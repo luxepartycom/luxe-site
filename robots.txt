@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /preview/
+Disallow: /invite/
+Disallow: /en/invite/
 
 Sitemap: https://luxepartycom.github.io/luxe-site/sitemap.xml

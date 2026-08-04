@@ -36,7 +36,7 @@ function lines(raw) {
 /* UI文言の対訳表。日本語と英語で共通の骨格を持つ。 */
 var UI_STRINGS = {
   ja: {
-    entry: 'チケットを購入する', vip: 'VIPの詳細はこちら', pastEvents: '過去のイベント', currentEvent: '開催中のイベント',
+    entry: 'チケットを購入する', entryFree: '無料で申し込む', vip: 'VIPの詳細はこちら', pastEvents: '過去のイベント', currentEvent: '開催中のイベント',
     prevLabel: '前回のイベント', viewNight: 'この夜を見る', comingSoon: '近日発表',
     attention: '注意事項', privacy: 'プライバシーポリシー', tokusho: '特定商取引法に基づく表記',
     archiveEyebrow: 'Archive', archiveTitle: '過去開催<em>イベント</em>', archiveEmpty: 'まだ記録がありません。',
@@ -46,7 +46,7 @@ var UI_STRINGS = {
     archiveSub: function (n) { return n + '回分の記録。'; }
   },
   en: {
-    entry: 'BUY TICKET', vip: 'VIP DETAILS', pastEvents: 'Past Events', currentEvent: 'Current Event',
+    entry: 'BUY TICKET', entryFree: 'RSVP FREE', vip: 'VIP DETAILS', pastEvents: 'Past Events', currentEvent: 'Current Event',
     prevLabel: 'Previous Event', viewNight: 'View this night', comingSoon: 'Coming soon',
     attention: 'House Rules', privacy: 'Privacy Policy', tokusho: 'Commercial Transactions',
     archiveEyebrow: 'Archive', archiveTitle: 'Past <em>Events</em>', archiveEmpty: 'No records yet.',
@@ -169,6 +169,8 @@ function renderBlocks(blocks, ev, ctx) {
   var T = UI_STRINGS[lang];
   blocks.forEach(function (b) {
     var type = String(b.type || '').toLowerCase();
+    // 招待版（関係者ご招待）では料金表を出さない（購入導線の非表示）
+    if (ctx.invite && type === 'table') return;
     var bTitle = loc(b, 'title', lang);
     var bBody = loc(b, 'body', lang);
     // title は「ABOUT|夜だけの、もうひとつの東京」のように 小ラベル|大見出し と書ける
@@ -282,7 +284,7 @@ function renderBlocks(blocks, ev, ctx) {
       var href = String(b.link || '').trim();
       if (!href) return;
       inner = (bBody ? '<div class="body-copy"><p>' + lines(bBody).join('</p><p>') + '</p></div>' : '') +
-        '<div class="hero-cta"><a class="btn btn-fill" href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(T.entry) + '</a></div>';
+        '<div class="hero-cta"><a class="btn btn-fill" href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(ctx.invite ? T.entryFree : T.entry) + '</a></div>';
 
     } else if (type === 'pastevents') {
       // 任意の説明文（bBody）＋過去イベントの写真カード帯を自動生成。
@@ -365,20 +367,23 @@ function renderEventPage(tpl, ev, blocks, ctx) {
   if (ev.open) facts += '<div class="fact"><dt>Time</dt><dd>' + esc(ev.open) + '<small> — ' + esc(ev.close || '') + '</small></dd></div>';
   if (ev.venue) facts += '<div class="fact"><dt>Venue</dt><dd>' + esc(loc(ev, 'venue', i.lang)) + '</dd></div>';
 
+  // 招待版は「無料で申し込む / RSVP FREE」ラベル。本編は通常の購入CTA。
+  var ctaText = ctx.invite ? t.entryFree : t.entry;
+
   var heroCta = '';
   if (!past && ev.entryUrl) {
-    heroCta = '<a class="btn btn-fill" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">' + esc(t.entry) + '</a>';
+    heroCta = '<a class="btn btn-fill" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">' + esc(ctaText) + '</a>';
   }
   heroCta += '<a class="btn btn-line" href="' + i.langRoot + 'archive/">' + esc(t.pastEvents) + '</a>';
 
   var headerCta = (!past && ev.entryUrl)
-    ? '<a class="cta-mini" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">TICKET</a>'
+    ? '<a class="cta-mini" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">' + (ctx.invite ? 'RSVP' : 'TICKET') + '</a>'
     : '<a class="cta-mini" href="' + i.langRoot + 'archive/">ARCHIVE</a>';
 
   // 常時表示のCTAバー（開催予定のときだけ・一般エントリー＋VIP）
   var stickyBtns = '';
-  if (!past && ev.entryUrl) stickyBtns += '<a class="scta-btn scta-fill" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">' + esc(t.entry) + '</a>';
-  if (!past && ev.vipUrl) stickyBtns += '<a class="scta-btn scta-line" href="' + esc(ev.vipUrl) + '" target="_blank" rel="noopener">' + esc(t.vip) + '</a>';
+  if (!past && ev.entryUrl) stickyBtns += '<a class="scta-btn scta-fill" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">' + esc(ctaText) + '</a>';
+  if (!past && ev.vipUrl && !ctx.invite) stickyBtns += '<a class="scta-btn scta-line" href="' + esc(ev.vipUrl) + '" target="_blank" rel="noopener">' + esc(t.vip) + '</a>';
   var stickyCta = stickyBtns
     ? '<div class="sticky-cta"><div class="scta-inner"><span class="scta-title">' + esc(String(title).split('|')[0].trim()) + '</span><span class="scta-btns">' + stickyBtns + '</span></div></div>'
     : '';
@@ -399,7 +404,8 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     };
     if (ev.venue) ld.location = { '@type': 'Place', name: ev.venue, address: { '@type': 'PostalAddress', addressLocality: '東京', addressCountry: 'JP' } };
     if (ogpFull) ld.image = [ogpFull];
-    if (ev.entryUrl) ld.offers = { '@type': 'AggregateOffer', lowPrice: '5000', highPrice: '20000', priceCurrency: 'JPY', url: ev.entryUrl, availability: 'https://schema.org/InStock' };
+    // 招待版は無料・限定公開のため価格オファーを構造化データに出さない
+    if (ev.entryUrl && !ctx.invite) ld.offers = { '@type': 'AggregateOffer', lowPrice: '5000', highPrice: '20000', priceCurrency: 'JPY', url: ev.entryUrl, availability: 'https://schema.org/InStock' };
     jsonld = '<script type="application/ld+json">' + JSON.stringify(ld).replace(/</g, '\\u003c') + '</script>';
   }
 
@@ -428,6 +434,7 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     })(),
     '{{ANALYTICS}}': analyticsHtml(ctx),
     '{{ENDED_BADGE}}': past ? '<span class="ended-badge">ENDED</span>' : '',
+    '{{INVITE_BADGE}}': ctx.invite ? '<span class="invite-badge">関係者ご招待 <span>/ Invitation</span></span>' : '',
     '{{EDITION}}': esc(ev.edition || ''),
     '{{H1}}': h1html,
     '{{FACTS}}': facts,
@@ -589,7 +596,8 @@ function renderSitemap(suffixes, cfg) {
 
 /* ---------- robots.txt ---------- */
 function renderRobots(cfg) {
-  return 'User-agent: *\nAllow: /\nDisallow: /preview/\n\nSitemap: ' + cfg.baseUrl + 'sitemap.xml\n';
+  // /invite/・/en/invite/ は関係者向け限定公開のためクロール拒否（sitemapにも載せない）
+  return 'User-agent: *\nAllow: /\nDisallow: /preview/\nDisallow: /invite/\nDisallow: /en/invite/\n\nSitemap: ' + cfg.baseUrl + 'sitemap.xml\n';
 }
 
 if (typeof module !== 'undefined' && module.exports) {

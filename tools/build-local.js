@@ -46,14 +46,38 @@ function blocksFor(id) {
     .filter(b => b.eventId === id && b.published !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 }
-function ctxFor(base, suffix, lang) {
-  return {
+function ctxFor(base, suffix, lang, opts) {
+  return Object.assign({
     base, suffix, lang, now, assets, siteName: cfg.siteName, baseUrl: cfg.baseUrl, brandHtml, snsHtml,
     ga4Id: cfg.ga4Id || '', metaPixelId: cfg.metaPixelId || '', prevEvent,
     pastEvents: past
       .filter(e => !current || e.id !== current.id)
       .sort((a, b) => String(b.date).localeCompare(String(a.date)))
-  };
+  }, opts || {});
+}
+
+/* ---- 関係者向け無料招待（限定公開）用の変種データ。本編は非破壊、招待は追加ページのみ。
+   entryUrl は無料URL(type=free)、VIP導線は空、料金表(table)は render 側で非表示、
+   購入系ラベルは招待CTA(無料で申し込む/RSVP FREE)へ差し替える。 */
+function toFreeUrl(u) {
+  const s = String(u || '');
+  if (!s) return s;
+  if (/[?&]type=paid\b/.test(s)) return s.replace(/([?&]type=)paid\b/, '$1free');
+  if (/[?&]type=free\b/.test(s)) return s;
+  return s + (s.indexOf('?') >= 0 ? '&' : '?') + 'type=free';
+}
+const inviteEvent = current ? Object.assign({}, current, {
+  entryUrl: toFreeUrl(current.entryUrl),
+  vipUrl: ''
+}) : null;
+function inviteBlocksFor(id) {
+  return blocksFor(id).map(b => {
+    if (String(b.type || '').toLowerCase() === 'entry') {
+      // エントリCTAのリンクを無料URLへ、見出しの「チケットのご購入」を申し込みへ差し替え
+      return Object.assign({}, b, { link: toFreeUrl(b.link), title: 'ENTRY|お申し込み', title_en: 'ENTRY|RSVP' });
+    }
+    return b;
+  });
 }
 function write(rel, html) {
   const p = path.join(ROOT, rel);
@@ -63,7 +87,7 @@ function write(rel, html) {
 }
 
 // 生成ディレクトリを一旦クリーン（削除済みイベントの残骸ページを残さない）
-['events', 'en', 'archive'].forEach(function (d) {
+['events', 'en', 'archive', 'invite'].forEach(function (d) {
   try { fs.rmSync(path.join(ROOT, d), { recursive: true, force: true }); } catch (e) {}
 });
 
@@ -90,6 +114,11 @@ for (const L of LANGS) {
   /* アーカイブ = 終了済みのみ */
   write(`${L.prefix}archive/index.html`,
     R.renderArchivePage(tplArchive, past, ctxFor(L.baseArchive, 'archive/', L.lang)));
+
+  /* 関係者向け無料招待（限定公開・noindex・sitemap非掲載・robotsでDisallow）。
+     本編と同一コンテンツ／演出で、CTA=無料で申し込む・entryUrl=type=free・料金表なし・VIP導線なし・招待バッジあり。 */
+  if (inviteEvent) write(`${L.prefix}invite/index.html`,
+    R.renderEventPage(tplEvent, inviteEvent, inviteBlocksFor(current.id), ctxFor(L.baseArchive, 'invite/', L.lang, { invite: true, noindex: true })));
 }
 
 /* 404・sitemap・robots（GAS 本番と同じ出力） */
