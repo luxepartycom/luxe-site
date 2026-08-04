@@ -133,8 +133,7 @@
       heroBtn.type="button"; heroBtn.className="vid-sound"; heroBtn.innerHTML=ICON_OFF;
       heroBtn.setAttribute("aria-label","ヒーロー動画の音声のオン・オフ"); heroBtn.setAttribute("aria-pressed","false");
       heroBtn.addEventListener("click", function(ev){ ev.stopPropagation(); if(cur===hero){ muteAll(); } else { setAudio(hero); } });
-      var heroSec = hero.closest("section") || hero.parentNode;
-      if(heroSec){ if(window.getComputedStyle && getComputedStyle(heroSec).position === "static") heroSec.style.position="relative"; heroSec.appendChild(heroBtn); }
+      document.body.appendChild(heroBtn); heroBtn.classList.add("show"); /* 画面右端に固定表示（スクロール不要で常に見える） */
       /* 読込と同時に音声つき自動再生を試みる（PC/再訪などブラウザが許可すれば鳴る）。
          iOS/初訪問等でブロックされたら無音維持（属性autoplayで視覚再生は継続）＋最初のタップで即音声ON。 */
       hero.muted = false;
@@ -151,7 +150,10 @@
         });
       } else { setAudio(hero); }
       if("IntersectionObserver" in window){
-        new IntersectionObserver(function(es){ es.forEach(function(e){ if(!e.isIntersecting && cur===hero){ muteAll(); } }); }, { threshold:0.35 }).observe(hero);
+        new IntersectionObserver(function(es){ es.forEach(function(e){
+          if(e.isIntersecting){ heroBtn.classList.add("show"); }
+          else { heroBtn.classList.remove("show"); if(cur===hero){ muteAll(); } }
+        }); }, { threshold:0.2 }).observe(hero);
       }
     }
     /* 過去リール等（ヒーロー以外の全動画）：タップで音声トグル（1つずつ） */
