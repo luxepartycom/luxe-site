@@ -80,6 +80,24 @@
   } else {
     document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("in"); });
   }
+
+  /* 動画音声：常に1つだけ再生（他は自動ミュート）。リール等=タップで音声トグル。 */
+  (function(){
+    var vids = Array.prototype.slice.call(document.querySelectorAll("video"));
+    if(!vids.length) return;
+    var cur = null;
+    function setAudio(v){
+      for(var i=0;i<vids.length;i++){ if(vids[i]!==v){ vids[i].muted = true; vids[i].removeAttribute("data-audio"); } }
+      if(v){ v.muted = false; try{ var p = v.play(); if(p && p.catch) p.catch(function(){}); }catch(e){} v.setAttribute("data-audio","on"); }
+      cur = v || null;
+    }
+    function muteAll(){ setAudio(null); }
+    window.__luxeAudio = { set:setAudio, muteAll:muteAll, current:function(){ return cur; } };
+    for(var j=0;j<vids.length;j++){ (function(v){
+      v.style.cursor="pointer";
+      v.addEventListener("click", function(){ if(cur===v){ muteAll(); } else { setAudio(v); } });
+    })(vids[j]); }
+  })();
 })();
 </script>
 </body>
