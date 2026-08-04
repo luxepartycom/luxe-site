@@ -263,3 +263,164 @@ body{padding-bottom:74px}
   .scta-btns{flex:1; gap:8px}
   .scta-btn{flex:1; text-align:center; padding:12px 8px}
 }
+
+/* =========================================================================
+   LUXE ELEVATION LAYER — プレゼンテーション格上げ（30万→80-100万レベル）
+   既存レイヤーの後に置き、カスケードで上書きする。コピー・構造は不変。
+   追加した意匠：光学サイズ・階調の効いたタイポ／フィルムグレイン＋ビネット／
+   ヘアラインの金分割線／シーン・スウィープの効いたボタン／スクロール連動の
+   段階リビール（見出し→本文→カードのカスケード）／ヒーローの入場アニメ／
+   スクロール進捗バー＋ヘッダー凝縮。すべて自己完結・既存フォントのみ。
+   ========================================================================= */
+:root{
+  --gold-lite:#E7CE92;
+  --gold-deep:#B8934A;
+  --gold-grad:linear-gradient(135deg,var(--gold-lite) 0%,var(--champagne) 52%,var(--gold-deep) 100%);
+  --ease:cubic-bezier(.19,1,.22,1);        /* expo-out：ラグジュアリーな減速 */
+  --ease-soft:cubic-bezier(.16,.7,.3,1);
+}
+
+/* ---- 基盤の質感 ---- */
+html{-webkit-text-size-adjust:100%}
+body{text-rendering:optimizeLegibility; font-feature-settings:"palt" 1; letter-spacing:.005em}
+.brand,.hero h1,.sec-title,.fact dd,.artist-name,.table-name,.table-price,.wall-title,.wall-year,
+.pastcard-title,.prevevent-title,.scta-title,.hero .edition{font-optical-sizing:auto}
+::selection{background:rgba(216,178,106,.26); color:#fff}
+*{scrollbar-width:thin; scrollbar-color:rgba(216,178,106,.42) transparent}
+::-webkit-scrollbar{width:10px; height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--champagne),var(--gold-deep)); border-radius:20px; border:3px solid var(--ink)}
+::-webkit-scrollbar-thumb:hover{background:var(--gold-lite)}
+
+/* ---- 大気（フィルムグレイン＋ビネット）：全ページ共通・マークアップ不要 ---- */
+body::before{content:""; position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.05;
+  mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px}
+body::after{content:""; position:fixed; inset:0; z-index:2; pointer-events:none;
+  background:radial-gradient(135% 105% at 50% 32%, transparent 56%, rgba(4,3,8,.5) 100%)}
+
+/* ---- スクロール進捗バー（JSで scaleX を更新） ---- */
+.scroll-progress{position:fixed; top:0; left:0; height:2px; width:100%; z-index:70;
+  transform:scaleX(0); transform-origin:0 50%; will-change:transform;
+  background:linear-gradient(90deg,var(--gold-deep),var(--champagne),var(--gold-lite));
+  box-shadow:0 0 14px rgba(216,178,106,.55)}
+
+/* ---- ヘッダー：スクロールで凝縮しガラス化 ---- */
+header{padding-top:18px; padding-bottom:18px;
+  transition:padding .45s var(--ease), background .45s ease, backdrop-filter .45s ease, border-color .45s ease;
+  border-bottom:1px solid transparent}
+header.scrolled{padding-top:11px; padding-bottom:11px; border-bottom-color:var(--line);
+  background:rgba(8,7,12,.72); -webkit-backdrop-filter:blur(16px) saturate(1.25); backdrop-filter:blur(16px) saturate(1.25)}
+.brand{letter-spacing:.24em}
+.cta-mini{letter-spacing:.22em; border-color:rgba(216,178,106,.5); transition:background .35s, color .35s, box-shadow .4s}
+.cta-mini:hover{box-shadow:0 6px 20px -8px rgba(216,178,106,.7)}
+
+/* ---- アイブロウ：先頭に金のティックを添える ---- */
+.eyebrow{position:relative; padding-left:34px; letter-spacing:.4em}
+.eyebrow::before{content:""; position:absolute; left:0; top:.6em; width:22px; height:1px;
+  background:linear-gradient(90deg,var(--champagne),rgba(216,178,106,0))}
+
+/* ---- 見出し：光学サイズ＋わずかなトラッキング／emは金のグラデ文字 ---- */
+.sec-title{letter-spacing:-.012em; line-height:1.06; font-size:clamp(30px,6vw,60px)}
+.sec-title em{color:var(--champagne)}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .sec-title em{background:linear-gradient(100deg,var(--gold-lite),var(--champagne) 45%,var(--gold-deep));
+    -webkit-background-clip:text; background-clip:text; color:transparent}
+}
+.sec-sub{letter-spacing:.02em}
+
+/* ---- 分割線：フラットな枠線 → 中央が金に灯るヘアライン ---- */
+.sec + .sec{border-top:0}
+.sec + .sec::before{content:""; position:absolute; top:0; left:var(--pad); right:var(--pad); height:1px;
+  background:linear-gradient(90deg,transparent,var(--line) 12%,rgba(216,178,106,.34) 50%,var(--line) 88%,transparent)}
+
+/* ---- ボタン：金グラデ＋シーン・スウィープ＋浮遊 ---- */
+.btn{font-size:11px; letter-spacing:.24em; padding:16px 32px; position:relative; overflow:hidden; isolation:isolate;
+  transition:transform .4s var(--ease), box-shadow .45s ease, background .4s ease, color .35s ease, border-color .4s ease}
+.btn-fill{background:var(--gold-grad); color:var(--ink); box-shadow:0 8px 26px -10px rgba(216,178,106,.55)}
+.btn-fill:hover{box-shadow:0 14px 38px -10px rgba(216,178,106,.75)}
+.btn-line{border-color:rgba(216,178,106,.5)}
+.btn-line:hover{border-color:var(--champagne); background:rgba(216,178,106,.1)}
+.btn:hover{transform:translateY(-3px)}
+.btn::after{content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.42) 50%,transparent 62%);
+  transform:translateX(-135%); transition:transform .9s var(--ease)}
+.btn:hover::after{transform:translateX(135%)}
+
+/* ---- ヒーロー：入場アニメ（段階的にせり上がる）＋奥行きビネット ---- */
+.hero-media img{opacity:.55; animation-duration:26s}
+.hero-media::after{background:linear-gradient(to top, var(--ink) 2%, rgba(11,10,16,.3) 46%, rgba(11,10,16,.66) 100%)}
+.hero::after{content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:radial-gradient(125% 92% at 50% 42%, transparent 50%, rgba(5,4,9,.5) 100%)}
+.hero h1{letter-spacing:-.015em}
+@keyframes lux-rise{from{opacity:0; transform:translateY(42px)} to{opacity:1; transform:none}}
+.hero-inner > *{animation:lux-rise 1.15s var(--ease) both}
+.hero-inner .ended-badge{animation-delay:.08s}
+.hero-inner .edition{animation-delay:.16s}
+.hero-inner h1{animation-delay:.28s}
+.hero-inner .facts{animation-delay:.5s}
+.hero-inner .hero-cta{animation-delay:.64s}
+
+/* ---- ファクト（Date/Time/Venue）：縦罫で区切る編集的レイアウト ---- */
+.facts{gap:0}
+.fact{padding:6px clamp(16px,3.6vw,38px) 6px 0; position:relative}
+.fact + .fact{padding-left:clamp(16px,3.6vw,38px)}
+.fact + .fact::before{content:""; position:absolute; left:0; top:14px; bottom:8px; width:1px; background:var(--line)}
+.fact dt{letter-spacing:.3em}
+
+/* ---- 段階リビール：セクション直下の子を順にせり上げる ---- */
+.reveal{opacity:1; transform:none; transition:none}
+.reveal > *{opacity:0; transform:translateY(26px); transition:opacity 1s var(--ease), transform 1s var(--ease)}
+.reveal.in > *{opacity:1; transform:none}
+.reveal.in > *:nth-child(2){transition-delay:.09s}
+.reveal.in > *:nth-child(3){transition-delay:.18s}
+.reveal.in > *:nth-child(4){transition-delay:.26s}
+.reveal.in > *:nth-child(n+5){transition-delay:.32s}
+/* グリッド容器は静止させ、中の要素をカスケード（遅延はJSでインライン付与） */
+.reveal > .lineup, .reveal > .tables, .reveal > .pastgrid, .reveal > .gallery, .reveal > .wall{
+  opacity:1; transform:none; transition:none}
+.reveal .lineup .artist, .reveal .tables .table-card, .reveal .pastgrid > *, .reveal .gallery a, .reveal .wall-card{
+  opacity:0; transform:translateY(30px); transition:opacity .95s var(--ease), transform .95s var(--ease)}
+.reveal.in .lineup .artist, .reveal.in .tables .table-card, .reveal.in .pastgrid > *,
+.reveal.in .gallery a, .reveal.in .wall-card{opacity:1; transform:none}
+
+/* ---- ラインナップ（カード）：金縁とスクリムで肖像的に ---- */
+.artist-photo-wrap{position:relative}
+.artist-photo-wrap::before{content:""; position:absolute; inset:auto 0 0 0; height:42%; z-index:1; pointer-events:none;
+  background:linear-gradient(transparent, rgba(9,8,13,.6)); opacity:0; transition:opacity .5s ease}
+.artist-photo-wrap::after{content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(216,178,106,0); transition:box-shadow .5s ease}
+.lineup-cards .artist:hover .artist-photo-wrap::before{opacity:1}
+.lineup-cards .artist:hover .artist-photo-wrap::after{box-shadow:inset 0 0 0 1px rgba(216,178,106,.6)}
+.lineup-cards .artist-name{letter-spacing:.015em}
+/* ラインナップ（リスト）：ホバーで金のティックが伸びる */
+.lineup:not(.lineup-cards) .artist{position:relative}
+.lineup:not(.lineup-cards) .artist::after{content:""; position:absolute; left:0; bottom:-1px; height:1px; width:0;
+  background:linear-gradient(90deg,var(--champagne),transparent); transition:width .5s var(--ease)}
+.lineup:not(.lineup-cards) .artist:hover::after{width:64px}
+
+/* ---- 料金ティア：浮遊・価格はBodoniイタリックで格上げ ---- */
+.table-card{border-radius:2px; transition:transform .45s var(--ease), border-color .45s ease}
+.table-card:hover{transform:translateY(-4px)}
+.table-card[data-rank="1"]{background:linear-gradient(150deg, rgba(216,178,106,.13), rgba(11,10,16,.62))}
+.table-price{font-family:var(--display); font-style:italic; font-size:clamp(18px,2.6vw,23px); letter-spacing:.01em}
+
+/* ---- アーカイブ壁／過去カード：角を締め、光学サイズ適用 ---- */
+.wall-card, .pastcard, .pastcard-reel, .prevevent{border-radius:2px}
+.wall-card:hover img{opacity:1}
+
+/* ---- 常設CTAバー：上辺に金のヘアライン ---- */
+.sticky-cta{background:rgba(8,7,12,.82)}
+.sticky-cta::before{content:""; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(216,178,106,.5),transparent)}
+.scta-title{letter-spacing:.04em}
+.scta-fill{background:var(--gold-grad)}
+
+/* ---- モーション抑制の尊重（既存ルールに追補） ---- */
+@media (prefers-reduced-motion:reduce){
+  .reveal > *, .reveal .lineup .artist, .reveal .tables .table-card, .reveal .pastgrid > *,
+  .reveal .gallery a, .reveal .wall-card, .hero-inner > *{opacity:1 !important; transform:none !important; transition:none !important}
+  .scroll-progress{display:none}
+  body::before{display:none}
+}

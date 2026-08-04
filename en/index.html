@@ -64,13 +64,43 @@
 <div class="sticky-cta"><div class="scta-inner"><span class="scta-title">LUXE POOL PARTY</span><span class="scta-btns"><a class="scta-btn scta-fill" href="https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&amp;type=paid" target="_blank" rel="noopener">BUY TICKET</a><a class="scta-btn scta-line" href="https://lin.ee/zGh0dYy" target="_blank" rel="noopener">VIP DETAILS</a></span></div></div>
 
 <script>
-var io = new IntersectionObserver(function(es){
-  es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
-}, { threshold: .12 });
-document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
-
-/* 画像タップで拡大（フライヤー・出演者写真・図版）。リンク済み画像は除外。 */
 (function(){
+  var rm = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  /* スクロール進捗バー＋ヘッダー凝縮 */
+  var header = document.querySelector("header");
+  var prog = document.createElement("div"); prog.className = "scroll-progress";
+  document.body.appendChild(prog);
+  var ticking = false;
+  function onScroll(){
+    var st = window.pageYOffset || document.documentElement.scrollTop || 0;
+    if (header) header.classList.toggle("scrolled", st > 40);
+    var h = (document.documentElement.scrollHeight - window.innerHeight);
+    prog.style.transform = "scaleX(" + (h > 0 ? Math.min(st / h, 1) : 0) + ")";
+    ticking = false;
+  }
+  function req(){ if(!ticking){ ticking = true; requestAnimationFrame(onScroll); } }
+  onScroll();
+  window.addEventListener("scroll", req, { passive:true });
+  window.addEventListener("resize", req, { passive:true });
+
+  /* 段階リビール＋グリッドのカスケード（見出し→本文→カードが順に立ち上がる） */
+  function cascade(sec){
+    var items = sec.querySelectorAll(".lineup .artist, .tables .table-card, .pastgrid > *, .gallery a, .wall-card");
+    for (var i = 0; i < items.length; i++){
+      items[i].style.transitionDelay = (rm ? 0 : Math.min(i * 0.05, 0.7)) + "s";
+    }
+  }
+  if ("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ cascade(e.target); e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: .12, rootMargin: "0px 0px -6% 0px" });
+    document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("in"); });
+  }
+
+  /* 画像タップで拡大（フライヤー・出演者写真・図版）。リンク済み画像は除外。 */
   var sel = ".text-flyer, .artist-photo, .figure img";
   var box = document.createElement("div"); box.className = "lightbox";
   var big = document.createElement("img"); box.appendChild(big);

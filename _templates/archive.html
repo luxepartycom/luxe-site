@@ -33,7 +33,7 @@
 </header>
 
 <main>
-  <section class="sec" style="padding-top:clamp(120px,18vw,180px)">
+  <section class="sec reveal" style="padding-top:clamp(120px,18vw,180px)">
     <span class="eyebrow">{{ARCHIVE_EYEBROW}}</span>
     <h2 class="sec-title">{{ARCHIVE_TITLE}}</h2>
     <p class="sec-sub">{{ARCHIVE_SUB}}</p>
@@ -46,5 +46,41 @@
   <div class="f-links">{{FOOTER_LINKS}}</div>
   <p class="copy">© {{SITE_NAME}}</p>
 </footer>
+
+<script>
+(function(){
+  var rm = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  var header = document.querySelector("header");
+  var prog = document.createElement("div"); prog.className = "scroll-progress";
+  document.body.appendChild(prog);
+  var ticking = false;
+  function onScroll(){
+    var st = window.pageYOffset || document.documentElement.scrollTop || 0;
+    if (header) header.classList.toggle("scrolled", st > 40);
+    var h = (document.documentElement.scrollHeight - window.innerHeight);
+    prog.style.transform = "scaleX(" + (h > 0 ? Math.min(st / h, 1) : 0) + ")";
+    ticking = false;
+  }
+  function req(){ if(!ticking){ ticking = true; requestAnimationFrame(onScroll); } }
+  onScroll();
+  window.addEventListener("scroll", req, { passive:true });
+  window.addEventListener("resize", req, { passive:true });
+
+  function cascade(sec){
+    var items = sec.querySelectorAll(".wall-card");
+    for (var i = 0; i < items.length; i++){
+      items[i].style.transitionDelay = (rm ? 0 : Math.min(i * 0.045, 0.6)) + "s";
+    }
+  }
+  if ("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ cascade(e.target); e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: .06, rootMargin: "0px 0px -4% 0px" });
+    document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("in"); });
+  }
+})();
+</script>
 </body>
 </html>
