@@ -66,19 +66,35 @@ function toFreeUrl(u) {
   if (/[?&]type=free\b/.test(s)) return s;
   return s + (s.indexOf('?') >= 0 ? '&' : '?') + 'type=free';
 }
-const inviteEvent = current ? Object.assign({}, current, {
-  entryUrl: toFreeUrl(current.entryUrl),
-  vipUrl: ''
-}) : null;
-function inviteBlocksFor(id) {
+// promoter を無料URLに付与（固定プロモーターの招待リンク用）。申込の invited_by がこの値になる。
+function withPromoter(u, promoter) {
+  const s = String(u || '');
+  if (!s || !promoter) return s;
+  return s + (s.indexOf('?') >= 0 ? '&' : '?') + 'promoter=' + encodeURIComponent(promoter);
+}
+// 招待版イベント（promoter を渡すとCTA遷移先に promoter を固定）
+function inviteEventFor(promoter) {
+  return current ? Object.assign({}, current, {
+    entryUrl: withPromoter(toFreeUrl(current.entryUrl), promoter),
+    vipUrl: ''
+  }) : null;
+}
+const inviteEvent = inviteEventFor(null);
+function inviteBlocksFor(id, promoter) {
   return blocksFor(id).map(b => {
     if (String(b.type || '').toLowerCase() === 'entry') {
-      // エントリCTAのリンクを無料URLへ、見出しの「チケットのご購入」を申し込みへ差し替え
-      return Object.assign({}, b, { link: toFreeUrl(b.link), title: 'ENTRY|お申し込み', title_en: 'ENTRY|RSVP' });
+      // エントリCTAのリンクを無料URL(＋promoter固定)へ、見出しの「チケットのご購入」を申し込みへ差し替え
+      return Object.assign({}, b, { link: withPromoter(toFreeUrl(b.link), promoter), title: 'ENTRY|お申し込み', title_en: 'ENTRY|RSVP' });
     }
     return b;
   });
 }
+// 固定プロモーター（各自にこの限定URLを渡す→申込の invited_by が自動でこの値になる）
+const PROMOTERS = [
+  { slug: 'daiko', promoter: 'LUXE_Daiko' },
+  { slug: 'ren',   promoter: 'LUXE_Ren' },
+  { slug: 'ryu',   promoter: 'LUXE_Ryu' }
+];
 function write(rel, html) {
   const p = path.join(ROOT, rel);
   fs.mkdirSync(path.dirname(p), { recursive: true });
@@ -117,8 +133,15 @@ for (const L of LANGS) {
 
   /* 関係者向け無料招待（限定公開・noindex・sitemap非掲載・robotsでDisallow）。
      本編と同一コンテンツ／演出で、CTA=無料で申し込む・entryUrl=type=free・料金表なし・VIP導線なし・招待バッジあり。 */
-  if (inviteEvent) write(`${L.prefix}invite/index.html`,
-    R.renderEventPage(tplEvent, inviteEvent, inviteBlocksFor(current.id), ctxFor(L.baseArchive, 'invite/', L.lang, { invite: true, noindex: true })));
+  if (inviteEvent) {
+    write(`${L.prefix}invite/index.html`,
+      R.renderEventPage(tplEvent, inviteEvent, inviteBlocksFor(current.id), ctxFor(L.baseArchive, 'invite/', L.lang, { invite: true, noindex: true })));
+    /* プロモーター固定の招待バリアント（CTA遷移先に promoter を固定・限定公開）。/invite/<slug>/ は invite/ より1階層深い。 */
+    for (const P of PROMOTERS) {
+      write(`${L.prefix}invite/${P.slug}/index.html`,
+        R.renderEventPage(tplEvent, inviteEventFor(P.promoter), inviteBlocksFor(current.id, P.promoter), ctxFor(L.baseArchive + '../', `invite/${P.slug}/`, L.lang, { invite: true, noindex: true })));
+    }
+  }
 }
 
 /* 404・sitemap・robots（GAS 本番と同じ出力） */
