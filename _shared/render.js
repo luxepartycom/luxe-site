@@ -597,7 +597,8 @@ function renderSitemap(suffixes, cfg) {
 /* ---------- robots.txt ---------- */
 function renderRobots(cfg) {
   // /invite/・/en/invite/ は関係者向け限定公開のためクロール拒否（sitemapにも載せない）
-  return 'User-agent: *\nAllow: /\nDisallow: /preview/\nDisallow: /invite/\nDisallow: /en/invite/\n\nSitemap: ' + cfg.baseUrl + 'sitemap.xml\n';
+  // /invite/・/p/ は限定配布（本編と内容が重複するため、検索に出すと公開サイト側のSEOを食い合う）
+  return 'User-agent: *\nAllow: /\nDisallow: /preview/\nDisallow: /invite/\nDisallow: /en/invite/\nDisallow: /p/\nDisallow: /en/p/\n\nSitemap: ' + cfg.baseUrl + 'sitemap.xml\n';
 }
 
 if (typeof module !== 'undefined' && module.exports) {

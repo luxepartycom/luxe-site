@@ -95,6 +95,96 @@ const PROMOTERS = [
   { slug: 'ren',   promoter: 'LUXE_Ren' },
   { slug: 'ryu',   promoter: 'LUXE_Ryu' }
 ];
+
+/* ---- プロモーター専用サイト /p/<slug>/（2026-08-07 追加）------------------
+   /invite/<slug>/ が「関係者向け無料招待」（type=free・料金表なし・VIP導線なし）
+   なのに対し、こちらは本編と同じ通常サイト（有料チケット＋VIP）のまま
+   プロモーターだけを固定した版。知人へ直接配る前提のリンク。
+
+   VIP導線の違い（オーナー判断 2026-08-07）:
+     公開サイト … VIPボタンは LINE（相談を挟む接客導線・従来どおり）
+     /p/<slug>/ … VIPボタンは vip-plan.html へ直行し promoter を固定
+       → LINEは外部サービスでURLパラメータが消えるため、
+         LINE経由ではVIPの紹介者を機械的に記録できない。直行にして初めて
+         vip_reservations.invited_by に自動記録される。
+
+   検索エンジンには出さない（noindex）。本編と内容が重複するため、
+   出すと公開サイト側のSEOを食い合う。 */
+const VIP_PLAN_BASE = 'https://entry.luxepartytokyo.com/vip-plan.html';
+/* VIP申込URLのイベントIDは、サイト内部のスラッグ（2026-08-09-luxe-pool-party）ではなく
+   予約システム側のID（EV-XXXXXXX）でなければ申込が成立しない。
+   両者は別物なので、必ず entryUrl の e= から取り出して使う。 */
+function gasEventId(ev) {
+  const m = String((ev && ev.entryUrl) || '').match(/[?&]e=([^&]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+function vipPlanUrl(ev, promoter) {
+  const eid = gasEventId(ev);
+  if (!eid) return '';   // 取り出せない＝壊れたVIPリンクを出すくらいなら出さない
+  return withPromoter(VIP_PLAN_BASE + '?e=' + encodeURIComponent(eid), promoter);
+}
+// 通常サイトのまま promoter だけ固定したイベントデータ（有料URL・VIPは申込ページ直行）
+function promoterEventFor(promoter) {
+  return current ? Object.assign({}, current, {
+    entryUrl: withPromoter(current.entryUrl, promoter),   // type=paid のまま
+    vipUrl:   vipPlanUrl(current, promoter)
+  }) : null;
+}
+// 本文ブロックのCTAリンクにも promoter を付ける（見出し等は本編のまま触らない）
+function promoterBlocksFor(id, promoter) {
+  return blocksFor(id).map(b => {
+    if (String(b.type || '').toLowerCase() === 'entry') {
+      return Object.assign({}, b, { link: withPromoter(b.link, promoter) });
+    }
+    return b;
+  });
+}
+
+/* ---- /p/ 実行時方式（デプロイ不要でプロモーターを増やせる）------------------
+   /p/<slug>/ は1人につき1ファイルを生成するため、追加のたびにビルドと
+   デプロイ（オーナー端末での push）が必要になり、人数が増えると回らない。
+   そこで /p/index.html を1枚だけ置き、?n=<名前> を読んで申込リンクへ
+   promoter を実行時に付ける。以後は URL を渡すだけで新しいプロモーターに対応できる。
+
+   申込システムは別ドメイン（entry.luxepartytokyo.com）なので、
+   ブラウザの保存領域は共有されない。よってリンクに埋め込む方式でしか渡せない。
+   逆に、一度リンクを踏めば以降は申込システム側が保持するため、
+   Stripe決済へ遷移しても帰属は失われない（決済前にサーバへ記録済み）。 */
+const PROMOTER_RUNTIME_SNIPPET = [
+'<script>',
+'(function(){',
+'  // /p/?n=<プロモーター名> … このページ配下の申込リンクを全てそのプロモーターに固定する。',
+'  var q = new URLSearchParams(location.search);',
+'  var n = (q.get("n") || q.get("p") || q.get("promoter") || "").trim();',
+'  // サイト内を回遊してパラメータが落ちても維持できるよう保持する（同一オリジン内のみ有効）',
+'  try {',
+'    if (n) sessionStorage.setItem("luxe_promoter", n);',
+'    else   n = sessionStorage.getItem("luxe_promoter") || "";',
+'  } catch (e) {}',
+'  if (!n) return;   // 名前が無ければ通常サイトとして振る舞う（リンクは素のまま）',
+'  var enc = encodeURIComponent(n);',
+'  var as = document.querySelectorAll(\'a[href^="https://entry.luxepartytokyo.com/"]\');',
+'  Array.prototype.forEach.call(as, function (a) {',
+'    var h = a.getAttribute("href") || "";',
+'    if (h.indexOf("promoter=") >= 0) return;   // 既に固定済みなら触らない',
+'    a.setAttribute("href", h + (h.indexOf("?") >= 0 ? "&" : "?") + "promoter=" + enc);',
+'  });',
+'  // サイト内の他ページへ移動しても名前が続くようにする',
+'  var ins = document.querySelectorAll(\'a[href]:not([href^="http"])\');',
+'  Array.prototype.forEach.call(ins, function (a) {',
+'    var h = a.getAttribute("href") || "";',
+'    if (h.charAt(0) === "#" || h.indexOf("n=") >= 0) return;',
+'    a.setAttribute("href", h + (h.indexOf("?") >= 0 ? "&" : "?") + "n=" + enc);',
+'  });',
+'})();',
+'</script>'
+].join('\n');
+
+function withPromoterRuntime(html) {
+  return html.indexOf('</body>') >= 0
+    ? html.replace('</body>', PROMOTER_RUNTIME_SNIPPET + '\n</body>')
+    : html + PROMOTER_RUNTIME_SNIPPET;
+}
 function write(rel, html) {
   const p = path.join(ROOT, rel);
   fs.mkdirSync(path.dirname(p), { recursive: true });
@@ -103,7 +193,7 @@ function write(rel, html) {
 }
 
 // 生成ディレクトリを一旦クリーン（削除済みイベントの残骸ページを残さない）
-['events', 'en', 'archive', 'invite'].forEach(function (d) {
+['events', 'en', 'archive', 'invite', 'p'].forEach(function (d) {
   try { fs.rmSync(path.join(ROOT, d), { recursive: true, force: true }); } catch (e) {}
 });
 
@@ -141,6 +231,23 @@ for (const L of LANGS) {
       write(`${L.prefix}invite/${P.slug}/index.html`,
         R.renderEventPage(tplEvent, inviteEventFor(P.promoter), inviteBlocksFor(current.id, P.promoter), ctxFor(L.baseArchive + '../', `invite/${P.slug}/`, L.lang, { invite: true, noindex: true })));
     }
+  }
+
+  /* プロモーター専用サイト /p/<slug>/（限定公開・noindex）。
+     本編と同一の通常サイト（有料チケット＋VIP）で、遷移先だけ promoter 固定。
+     invite: true を渡さないので、料金表もVIPボタンも本編どおり出る。
+     階層は invite/<slug>/ と同じ深さなので base も同じ扱い。 */
+  if (current) {
+    for (const P of PROMOTERS) {
+      write(`${L.prefix}p/${P.slug}/index.html`,
+        R.renderEventPage(tplEvent, promoterEventFor(P.promoter), promoterBlocksFor(current.id, P.promoter), ctxFor(L.baseArchive + '../', `p/${P.slug}/`, L.lang, { noindex: true })));
+    }
+
+    /* /p/ 1枚で全プロモーターを賄う版（?n=<名前>）。
+       promoter を空でレンダリングし、リンクの付与は実行時スニペットに任せる。
+       これにより新しいプロモーターの追加にビルドもデプロイも要らなくなる。 */
+    write(`${L.prefix}p/index.html`, withPromoterRuntime(
+      R.renderEventPage(tplEvent, promoterEventFor(''), promoterBlocksFor(current.id, ''), ctxFor(L.baseArchive, 'p/', L.lang, { noindex: true }))));
   }
 }
 

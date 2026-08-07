@@ -3,5 +3,7 @@ Allow: /
 Disallow: /preview/
 Disallow: /invite/
 Disallow: /en/invite/
+Disallow: /p/
+Disallow: /en/p/
 
 Sitemap: https://luxepartycom.github.io/luxe-site/sitemap.xml

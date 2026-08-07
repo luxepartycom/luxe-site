@@ -1,2 +1,13 @@
 .DS_Store
 node_modules/
+
+# ── 公開リポジトリへ出してはいけない社内資産 ───────────────────
+# luxepartycom/luxe-site は public。デプロイは
+#   rsync（社内ディレクトリ → clone）→ git add -A → push
+# という流れのため、ここで止めないと社内文書がそのまま公開される。
+# 2026-08-07、rsync 手順の点検でこの穴を発見し追加（当時 .gitignore は
+# .DS_Store と node_modules/ しか無く、止める仕組みが無かった）。
+memory.md
+HANDOFF_LUXE-SITE.md
+gas/
+.claude/
