@@ -112,5 +112,27 @@ console.log("\n── VIP支払方法の固定（?pay=）───────�
   dom.window.close();
 }
 
+
+{
+  const dom = open("?n=" + encodeURIComponent("山田太郎") + "&pay=both");
+  const vip = entryLinks(dom.window.document).filter(h => h.includes("vip-plan.html"));
+  A("pay=both で支払方法の指定が消える（両方表示）", vip.length > 0 && vip.every(h => !/[?&]pay=/.test(h)));
+  A("pay=both でも promoter は残る", vip.every(h => h.includes("promoter=")));
+  A("pay=both でURLが壊れない", vip.every(h => { try { new URL(h); return /[?&]e=EV-/.test(h); } catch(e){ return false; } }));
+  dom.window.close();
+}
+{
+  const dom = open("?n=" + encodeURIComponent("山田太郎") + "&pay=BOTH");
+  const vip = entryLinks(dom.window.document).filter(h => h.includes("vip-plan.html"));
+  A("大文字BOTHでも効く", vip.every(h => !/[?&]pay=/.test(h)));
+  dom.window.close();
+}
+{
+  const dom = open("?pay=both");
+  const vip = entryLinks(dom.window.document).filter(h => h.includes("vip-plan.html"));
+  A("名前なし pay=both 単独でも効く", vip.every(h => !/[?&]pay=/.test(h)));
+  dom.window.close();
+}
+
 console.log('\n' + (fail === 0 ? `—— 全合格 ✅（${pass}件）——` : `—— 不合格 ${fail}件 / 合格 ${pass}件 ❌ ——`));
 process.exit(fail === 0 ? 0 : 1);

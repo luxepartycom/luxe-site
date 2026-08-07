@@ -163,17 +163,36 @@
     if (n) sessionStorage.setItem("luxe_promoter", n);
     else   n = sessionStorage.getItem("luxe_promoter") || "";
   } catch (e) {}
-  var pay = (q.get("pay") || "").trim();
-  if (pay !== "stripe" && pay !== "transfer") pay = "";
-  if (!n && !pay) return;   // どちらも無ければ通常サイトとして振る舞う（リンクは素のまま）
+  // VIPの支払方法を URL で切り替える
+  //   ?pay=transfer … 銀行振込のみ
+  //   ?pay=stripe   … カード決済のみ
+  //   ?pay=both     … 両方から選ばせる（埋め込み済みの pay= を取り除く）
+  //   指定なし      … ビルド時の既定のまま
+  var pay = (q.get("pay") || "").trim().toLowerCase();
+  var payBoth = (pay === "both" || pay === "all" || pay === "any");
+  if (!payBoth && pay !== "stripe" && pay !== "transfer") pay = "";
+  if (!n && !pay && !payBoth) return;   // 何も無ければ通常サイトとして振る舞う（リンクは素のまま）
   var enc = n ? encodeURIComponent(n) : "";
+  // クエリから pay= だけを安全に取り除く（文字列置換だと ? や & が壊れやすい）
+  function stripPay(u) {
+    var i = u.indexOf("?");
+    if (i < 0) return u;
+    var base = u.slice(0, i);
+    var kept = [];
+    u.slice(i + 1).split("&").forEach(function (kv) { if (kv.indexOf("pay=") !== 0) kept.push(kv); });
+    return kept.length ? base + "?" + kept.join("&") : base;
+  }
   var as = document.querySelectorAll('a[href^="https://entry.luxepartytokyo.com/"]');
   Array.prototype.forEach.call(as, function (a) {
     var h = a.getAttribute("href") || "";
-    // VIP申込リンクだけ支払方法を差し替える（既存の pay= があれば置換）
-    if (pay && h.indexOf("vip-plan.html") >= 0) {
-      h = /[?&]pay=/.test(h) ? h.replace(/([?&]pay=)[^&]*/, "$1" + pay)
-                             : h + (h.indexOf("?") >= 0 ? "&" : "?") + "pay=" + pay;
+    // VIP申込リンクだけ支払方法を差し替える（既存の pay= があれば置換／両方指定なら除去）
+    if (h.indexOf("vip-plan.html") >= 0) {
+      if (payBoth) {
+        h = stripPay(h);
+      } else if (pay) {
+        h = /[?&]pay=/.test(h) ? h.replace(/([?&]pay=)[^&]*/, "$1" + pay)
+                               : h + (h.indexOf("?") >= 0 ? "&" : "?") + "pay=" + pay;
+      }
     }
     if (enc && h.indexOf("promoter=") < 0) {   // 既に固定済みなら触らない
       h = h + (h.indexOf("?") >= 0 ? "&" : "?") + "promoter=" + enc;
