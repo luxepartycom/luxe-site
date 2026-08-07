@@ -87,5 +87,30 @@ console.log('\n── 回遊（サイト内リンク経由での保持）──�
   dom.window.close();
 }
 
+
+console.log("\n── VIP支払方法の固定（?pay=）─────────────────");
+{
+  const dom = open("?n=" + encodeURIComponent("山田太郎"));
+  const vip = entryLinks(dom.window.document).filter(h => h.includes("vip-plan.html"));
+  A("既定で銀行振込に固定される(pay=transfer)", vip.length > 0 && vip.every(h => /[?&]pay=transfer/.test(h)));
+  A("promoter も同時に付く", vip.every(h => h.includes("promoter=")));
+  dom.window.close();
+}
+{
+  const dom = open("?n=" + encodeURIComponent("山田太郎") + "&pay=stripe");
+  const vip = entryLinks(dom.window.document).filter(h => h.includes("vip-plan.html"));
+  A("URLでカード決済へ上書きできる", vip.every(h => /[?&]pay=stripe/.test(h)));
+  A("pay が二重に付かない", vip.every(h => (h.match(/pay=/g) || []).length === 1));
+  const entry = entryLinks(dom.window.document).filter(h => h.includes("index.html?e="));
+  A("入場チケット側に pay は付けない", entry.every(h => !/[?&]pay=/.test(h)));
+  dom.window.close();
+}
+{
+  const dom = open("?n=" + encodeURIComponent("山田太郎") + "&pay=abc");
+  const vip = entryLinks(dom.window.document).filter(h => h.includes("vip-plan.html"));
+  A("不正な値は無視して既定のまま", vip.every(h => /[?&]pay=transfer/.test(h)));
+  dom.window.close();
+}
+
 console.log('\n' + (fail === 0 ? `—— 全合格 ✅（${pass}件）——` : `—— 不合格 ${fail}件 / 合格 ${pass}件 ❌ ——`));
 process.exit(fail === 0 ? 0 : 1);

@@ -62,7 +62,7 @@
   <p class="copy">© LUXE PARTY TOKYO</p>
 </footer>
 
-<div class="sticky-cta"><div class="scta-inner"><span class="scta-title">LUXE POOL PARTY</span><span class="scta-btns"><a class="scta-btn scta-fill" href="https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&amp;type=paid" target="_blank" rel="noopener">チケットを購入する</a><a class="scta-btn scta-line" href="https://entry.luxepartytokyo.com/vip-plan.html?e=EV-MS45773V" target="_blank" rel="noopener">VIPの詳細はこちら</a></span></div></div>
+<div class="sticky-cta"><div class="scta-inner"><span class="scta-title">LUXE POOL PARTY</span><span class="scta-btns"><a class="scta-btn scta-fill" href="https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&amp;type=paid" target="_blank" rel="noopener">チケットを購入する</a><a class="scta-btn scta-line" href="https://entry.luxepartytokyo.com/vip-plan.html?e=EV-MS45773V&amp;pay=transfer" target="_blank" rel="noopener">VIPの詳細はこちら</a></span></div></div>
 
 <script>
 (function(){
@@ -163,14 +163,24 @@
     if (n) sessionStorage.setItem("luxe_promoter", n);
     else   n = sessionStorage.getItem("luxe_promoter") || "";
   } catch (e) {}
-  if (!n) return;   // 名前が無ければ通常サイトとして振る舞う（リンクは素のまま）
-  var enc = encodeURIComponent(n);
+  var pay = (q.get("pay") || "").trim();
+  if (pay !== "stripe" && pay !== "transfer") pay = "";
+  if (!n && !pay) return;   // どちらも無ければ通常サイトとして振る舞う（リンクは素のまま）
+  var enc = n ? encodeURIComponent(n) : "";
   var as = document.querySelectorAll('a[href^="https://entry.luxepartytokyo.com/"]');
   Array.prototype.forEach.call(as, function (a) {
     var h = a.getAttribute("href") || "";
-    if (h.indexOf("promoter=") >= 0) return;   // 既に固定済みなら触らない
-    a.setAttribute("href", h + (h.indexOf("?") >= 0 ? "&" : "?") + "promoter=" + enc);
+    // VIP申込リンクだけ支払方法を差し替える（既存の pay= があれば置換）
+    if (pay && h.indexOf("vip-plan.html") >= 0) {
+      h = /[?&]pay=/.test(h) ? h.replace(/([?&]pay=)[^&]*/, "$1" + pay)
+                             : h + (h.indexOf("?") >= 0 ? "&" : "?") + "pay=" + pay;
+    }
+    if (enc && h.indexOf("promoter=") < 0) {   // 既に固定済みなら触らない
+      h = h + (h.indexOf("?") >= 0 ? "&" : "?") + "promoter=" + enc;
+    }
+    a.setAttribute("href", h);
   });
+  if (!enc) return;   // 名前が無ければサイト内リンクの引き継ぎは不要
   // サイト内の他ページへ移動しても名前が続くようにする
   var ins = document.querySelectorAll('a[href]:not([href^="http"])');
   Array.prototype.forEach.call(ins, function (a) {

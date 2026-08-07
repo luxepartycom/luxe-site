@@ -111,6 +111,13 @@ const PROMOTERS = [
    検索エンジンには出さない（noindex）。本編と内容が重複するため、
    出すと公開サイト側のSEOを食い合う。 */
 const VIP_PLAN_BASE = 'https://entry.luxepartytokyo.com/vip-plan.html';
+/* プロモーター経由のVIP申込で使う支払方法。申込ページ(vip-plan.html)は ?pay= を
+   受け取るとその方法に固定し、選択ボタンも1つになる。
+     'stripe'   … カード決済のみ（即時確定・回収漏れなし。決済手数料がかかる）
+     'transfer' … 銀行振込のみ（手数料ゼロ。入金確認と督促が発生する）
+     ''         … 従来どおり両方から選ばせる
+   /p/?n=名前&pay=stripe のようにURLで上書きもできる（実行時スニペット側で処理）。 */
+const VIP_PAY_MODE = 'transfer';   // 2026-08-07 オーナー指示により銀行振込固定
 /* VIP申込URLのイベントIDは、サイト内部のスラッグ（2026-08-09-luxe-pool-party）ではなく
    予約システム側のID（EV-XXXXXXX）でなければ申込が成立しない。
    両者は別物なので、必ず entryUrl の e= から取り出して使う。 */
@@ -121,7 +128,9 @@ function gasEventId(ev) {
 function vipPlanUrl(ev, promoter) {
   const eid = gasEventId(ev);
   if (!eid) return '';   // 取り出せない＝壊れたVIPリンクを出すくらいなら出さない
-  return withPromoter(VIP_PLAN_BASE + '?e=' + encodeURIComponent(eid), promoter);
+  let u = VIP_PLAN_BASE + '?e=' + encodeURIComponent(eid);
+  if (VIP_PAY_MODE) u += '&pay=' + encodeURIComponent(VIP_PAY_MODE);
+  return withPromoter(u, promoter);
 }
 // 通常サイトのまま promoter だけ固定したイベントデータ（有料URL・VIPは申込ページ直行）
 function promoterEventFor(promoter) {
@@ -161,14 +170,25 @@ const PROMOTER_RUNTIME_SNIPPET = [
 '    if (n) sessionStorage.setItem("luxe_promoter", n);',
 '    else   n = sessionStorage.getItem("luxe_promoter") || "";',
 '  } catch (e) {}',
-'  if (!n) return;   // 名前が無ければ通常サイトとして振る舞う（リンクは素のまま）',
-'  var enc = encodeURIComponent(n);',
+  // VIPの支払方法を URL で上書きできるようにする（?pay=stripe / transfer）',
+'  var pay = (q.get("pay") || "").trim();',
+'  if (pay !== "stripe" && pay !== "transfer") pay = "";',
+'  if (!n && !pay) return;   // どちらも無ければ通常サイトとして振る舞う（リンクは素のまま）',
+'  var enc = n ? encodeURIComponent(n) : "";',
 '  var as = document.querySelectorAll(\'a[href^="https://entry.luxepartytokyo.com/"]\');',
 '  Array.prototype.forEach.call(as, function (a) {',
 '    var h = a.getAttribute("href") || "";',
-'    if (h.indexOf("promoter=") >= 0) return;   // 既に固定済みなら触らない',
-'    a.setAttribute("href", h + (h.indexOf("?") >= 0 ? "&" : "?") + "promoter=" + enc);',
+'    // VIP申込リンクだけ支払方法を差し替える（既存の pay= があれば置換）',
+'    if (pay && h.indexOf("vip-plan.html") >= 0) {',
+'      h = /[?&]pay=/.test(h) ? h.replace(/([?&]pay=)[^&]*/, "$1" + pay)',
+'                             : h + (h.indexOf("?") >= 0 ? "&" : "?") + "pay=" + pay;',
+'    }',
+'    if (enc && h.indexOf("promoter=") < 0) {   // 既に固定済みなら触らない',
+'      h = h + (h.indexOf("?") >= 0 ? "&" : "?") + "promoter=" + enc;',
+'    }',
+'    a.setAttribute("href", h);',
 '  });',
+'  if (!enc) return;   // 名前が無ければサイト内リンクの引き継ぎは不要',
 '  // サイト内の他ページへ移動しても名前が続くようにする',
 '  var ins = document.querySelectorAll(\'a[href]:not([href^="http"])\');',
 '  Array.prototype.forEach.call(ins, function (a) {',
