@@ -262,9 +262,15 @@ for (const L of LANGS) {
   /* 関係者向け無料招待（限定公開・noindex・sitemap非掲載・robotsでDisallow）。
      本編と同一コンテンツ／演出で、CTA=無料で申し込む・entryUrl=type=free・料金表なし・VIP導線なし・招待バッジあり。 */
   if (inviteEvent) {
-    write(`${L.prefix}invite/index.html`,
-      R.renderEventPage(tplEvent, inviteEvent, inviteBlocksFor(current.id), ctxFor(L.baseArchive, 'invite/', L.lang, { invite: true, noindex: true })));
-    /* プロモーター固定の招待バリアント（CTA遷移先に promoter を固定・限定公開）。/invite/<slug>/ は invite/ より1階層深い。 */
+    /* /invite/?n=<名前> でも紹介者を固定できるようにする（/p/ と同じ実行時方式）。
+       これで PROMOTERS に載っていない人へも、その場で無料招待URLを発行できる。
+       ページの中身は従来の無料招待そのまま（type=free・料金表なし・VIP導線なし・招待バッジあり）で、
+       追加されるのは申込リンクへの promoter 付与だけ。?n= が無ければ従来と完全に同じ。 */
+    write(`${L.prefix}invite/index.html`, withPromoterRuntime(
+      R.renderEventPage(tplEvent, inviteEvent, inviteBlocksFor(current.id), ctxFor(L.baseArchive, 'invite/', L.lang, { invite: true, noindex: true }))));
+    /* プロモーター固定の招待バリアント（CTA遷移先に promoter を固定・限定公開）。/invite/<slug>/ は invite/ より1階層深い。
+       こちらは promoter を埋め込み済みの静的ページのまま。実行時スニペットは入れない
+       （?n= で別人に上書きできてしまうと、配った本人の実績が横取りされ得るため）。 */
     for (const P of PROMOTERS) {
       write(`${L.prefix}invite/${P.slug}/index.html`,
         R.renderEventPage(tplEvent, inviteEventFor(P.promoter), inviteBlocksFor(current.id, P.promoter), ctxFor(L.baseArchive + '../', `invite/${P.slug}/`, L.lang, { invite: true, noindex: true })));
