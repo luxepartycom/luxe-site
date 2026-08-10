@@ -19,14 +19,27 @@ const hrefs = html => (html.match(/https:\/\/entry\.luxepartytokyo\.com[^"']*/g)
 
 const PROMOTERS = ['daiko', 'ren', 'ryu'];
 
+/* 開催が終わると、ビルド時点で購入CTA・VIPボタンが生成されなくなる（render.js の past 分岐）。
+   その状態では「CTAがある」ことを検証できないため、期待値を切り替える。
+   終了後の挙動は tools/verify-ended-runtime.js が担当する。 */
+function currentEventOnSale() {
+  // ページに埋め込まれた開催終了時刻で厳密に判定する。
+  // リンクの有無で見ると、本文ブロックのCTAは終了後も生成されるため誤判定する。
+  const m = read('index.html').match(/var END = (\d+);/);
+  return m ? Date.now() < Number(m[1]) : true;
+}
+const ON_SALE = currentEventOnSale();
+if (!ON_SALE) console.log('  ※ 直近イベントは終了済み。購入CTAはビルド時に除外されるため、該当項目はスキップします');
+
+
 console.log('\n── 公開サイト（変えてはいけない）─────────────────');
 {
   const top = read('index.html');
   A('トップが生成されている', top.length > 0);
   A('トップは noindex ではない', !/noindex/.test(top));
-  A('トップのVIPボタンはLINEのまま', /scta-line[^>]*href="https:\/\/lin\.ee\//.test(top));
+  if (ON_SALE) A('トップのVIPボタンはLINEのまま', /scta-line[^>]*href="https:\/\/lin\.ee\//.test(top));
   A('トップに promoter は付かない', !hrefs(top).some(h => h.includes('promoter=')));
-  A('トップのチケットは有料(type=paid)', hrefs(top).some(h => h.includes('type=paid')));
+  if (ON_SALE) A('トップのチケットは有料(type=paid)', hrefs(top).some(h => h.includes('type=paid')));
 }
 
 console.log('\n── /p/<slug>/ プロモーター専用サイト ───────────────');
@@ -36,11 +49,12 @@ for (const slug of PROMOTERS) {
   console.log(`  [${slug}]`);
   A('  ページが生成されている', html.length > 0);
   A('  noindex が付く', /noindex/.test(html));
-  A('  申込リンクが全て promoter 固定', hs.length > 0 && hs.every(h => h.includes('promoter=')));
-  A('  チケットは有料のまま(type=paid)', hs.some(h => h.includes('type=paid') && h.includes('promoter=')));
+  A('  申込リンクは全て promoter 固定（あれば）', hs.every(h => h.includes('promoter=')));
+  if (ON_SALE) A('  申込リンクが存在する', hs.length > 0);
+  if (ON_SALE) A('  チケットは有料のまま(type=paid)', hs.some(h => h.includes('type=paid') && h.includes('promoter=')));
   A('  無料URL(type=free)になっていない', !hs.some(h => h.includes('type=free')));
   const vip = hs.filter(h => h.includes('vip-plan.html'));
-  A('  VIP申込リンクがある（LINEではない）', vip.length > 0);
+  if (ON_SALE) A('  VIP申込リンクがある（LINEではない）', vip.length > 0);
   A('  VIPにも promoter が付く', vip.every(h => h.includes('promoter=')));
   A('  VIPのイベントIDが予約システム側(EV-…)', vip.every(h => /[?&]e=EV-[A-Z0-9]+/.test(h)));
   A('  VIPにサイト内部スラッグが混入していない', !vip.some(h => /[?&]e=\d{4}-\d{2}-\d{2}-/.test(h)));
@@ -50,7 +64,8 @@ console.log('\n── /invite/<slug>/ 無料招待版（従来どおり）──
 for (const slug of PROMOTERS) {
   const html = read(`invite/${slug}/index.html`);
   const hs = hrefs(html);
-  A(`[${slug}] 無料URL(type=free)のまま`, hs.length > 0 && hs.every(h => h.includes('type=free')));
+  A(`[${slug}] 無料URL(type=free)のまま`, hs.every(h => h.includes('type=free')));
+  if (ON_SALE) A(`[${slug}] 申込リンクが存在する`, hs.length > 0);
   A(`[${slug}] VIP申込導線は出さない`, !hs.some(h => h.includes('vip-plan.html')));
   A(`[${slug}] promoter は固定`, hs.every(h => h.includes('promoter=')));
 }

@@ -159,6 +159,86 @@ function promoterBlocksFor(id, promoter) {
    ブラウザの保存領域は共有されない。よってリンクに埋め込む方式でしか渡せない。
    逆に、一度リンクを踏めば以降は申込システム側が保持するため、
    Stripe決済へ遷移しても帰属は失われない（決済前にサーバへ記録済み）。 */
+/* ---- 開催終了後の自動切替（2026-08-10 追加）--------------------------------
+   これまで「終了したか」はサイトを生成した瞬間にしか判定しておらず、
+   イベントが終わっても誰かが作り直すまでチケット購入ボタンが残り続けていた
+   （8/9のPOOL PARTY終了後も購入CTAが3箇所公開されたまま）。
+
+   終了時刻をページに埋め込み、開いた瞬間にブラウザ側で判定する方式にする。
+   ・再ビルドもデプロイも不要。以後どのイベントでも自動で効く
+   ・終了時刻を過ぎた瞬間から切り替わる（日をまたぐ待ち時間が無い）
+   ・CTAを消すだけだと行き止まりになるため、次回集客の導線（LINE/Instagram）へ差し替える
+   次のイベントをシートに登録して再生成すれば、トップは自動で次回へ切り替わる（既存の仕組み）。 */
+function eventEndMsFor(ev) {
+  const d = String((ev && ev.date) || '').split('-');
+  if (d.length !== 3) return 0;
+  const open = String(ev.open || '00:00').split(':');
+  const close = String(ev.close || '23:59').split(':');
+  const base = Date.UTC(+d[0], +d[1] - 1, +d[2], 0, 0, 0) - 9 * 3600 * 1000; // JST 00:00
+  const closeMin = (+close[0]) * 60 + (+close[1] || 0);
+  const openMin  = (+open[0]) * 60 + (+open[1] || 0);
+  return base + ((closeMin <= openMin ? 1 : 0) * 24 * 60 + closeMin) * 60 * 1000;
+}
+
+function endedSnippet(ev, lang) {
+  const endMs = eventEndMsFor(ev);
+  if (!endMs) return '';
+  const line = (cfg.sns && cfg.sns.line) || '';
+  const ig   = (cfg.sns && cfg.sns.instagram) || '';
+  const T = lang === 'en'
+    ? { notice:'This event has ended. Please stay tuned for the next one.',
+        line:'Get updates on LINE', ig:'Follow on Instagram', badge:'ENDED' }
+    : { notice:'本イベントは終了しました。次回開催をお待ちください。',
+        line:'LINEで次回のご案内を受け取る', ig:'Instagramをフォロー', badge:'開催終了' };
+  return [
+'<script>',
+'(function(){',
+'  // 開催終了時刻（ミリ秒・JST基準で算出済み）。過ぎていたら購入導線を次回集客へ差し替える。',
+'  var END = ' + endMs + ';',
+'  if (Date.now() < END) return;',
+'  var LINE = ' + JSON.stringify(line) + ', IG = ' + JSON.stringify(ig) + ';',
+'  function repl(el, href, text, cls) {',
+'    if (!el) return;',
+'    if (!href) { el.remove(); return; }',
+'    el.setAttribute("href", href);',
+'    el.setAttribute("target", "_blank");',
+'    el.setAttribute("rel", "noopener");',
+'    el.textContent = text;',
+'    if (cls) el.className = cls;',
+'  }',
+'  // ヒーロー：主ボタン=LINE、副ボタン（過去のイベント）はそのまま残す',
+'  var hero = document.querySelector(".hero-cta .btn-fill");',
+'  repl(hero, LINE, ' + JSON.stringify(T.line) + ', "btn btn-fill");',
+'  // 常時表示バー：チケット→LINE、VIP→Instagram',
+'  repl(document.querySelector(".sticky-cta .scta-fill"), LINE, ' + JSON.stringify(T.line) + ', "scta-btn scta-fill");',
+'  repl(document.querySelector(".sticky-cta .scta-line"), IG,   ' + JSON.stringify(T.ig)   + ', "scta-btn scta-line");',
+'  // ヘッダーの小さなCTA',
+'  repl(document.querySelector(".cta-mini"), LINE, "LINE", "cta-mini");',
+'  // 本文中のエントリーセクションのボタン（ヒーロー以外）',
+'  Array.prototype.forEach.call(document.querySelectorAll(".sec .hero-cta .btn-fill"), function (b) {',
+'    repl(b, LINE, ' + JSON.stringify(T.line) + ', "btn btn-fill");',
+'  });',
+'  // 終了した旨を明示する。黙って差し替えるとお客様が混乱するため。',
+'  var host = document.querySelector(".hero-cta");',
+'  if (host && !document.getElementById("ended-notice")) {',
+'    var n = document.createElement("div");',
+'    n.id = "ended-notice";',
+'    n.style.cssText = "margin-bottom:14px;font-size:0.72rem;letter-spacing:0.08em;color:#D8B26A;line-height:1.9;";',
+'    n.textContent = ' + JSON.stringify(T.notice) + ';',
+'    host.parentNode.insertBefore(n, host);',
+'  }',
+'  document.documentElement.setAttribute("data-event-ended", "1");',
+'})();',
+'</script>'
+  ].join('\n');
+}
+
+function withEndedRuntime(html, ev, lang) {
+  const s = endedSnippet(ev, lang);
+  if (!s) return html;
+  return html.indexOf('</body>') >= 0 ? html.replace('</body>', s + '\n</body>') : html + s;
+}
+
 const PROMOTER_RUNTIME_SNIPPET = [
 '<script>',
 '(function(){',
@@ -246,13 +326,13 @@ const LANGS = [
 
 for (const L of LANGS) {
   /* トップ = 直近の開催予定イベント */
-  if (current) write(`${L.prefix}index.html`,
-    R.renderEventPage(tplEvent, current, blocksFor(current.id), ctxFor(L.baseIndex, '', L.lang)));
+  if (current) write(`${L.prefix}index.html`, withEndedRuntime(
+    R.renderEventPage(tplEvent, current, blocksFor(current.id), ctxFor(L.baseIndex, '', L.lang)), current, L.lang));
 
   /* 個別ページ（全イベント分。アーカイブからの遷移先） */
   for (const ev of published) {
-    write(`${L.prefix}events/${ev.id}/index.html`,
-      R.renderEventPage(tplEvent, ev, blocksFor(ev.id), ctxFor(L.baseEvent, `events/${ev.id}/`, L.lang)));
+    write(`${L.prefix}events/${ev.id}/index.html`, withEndedRuntime(
+      R.renderEventPage(tplEvent, ev, blocksFor(ev.id), ctxFor(L.baseEvent, `events/${ev.id}/`, L.lang)), ev, L.lang));
   }
 
   /* アーカイブ = 終了済みのみ */
@@ -266,14 +346,14 @@ for (const L of LANGS) {
        これで PROMOTERS に載っていない人へも、その場で無料招待URLを発行できる。
        ページの中身は従来の無料招待そのまま（type=free・料金表なし・VIP導線なし・招待バッジあり）で、
        追加されるのは申込リンクへの promoter 付与だけ。?n= が無ければ従来と完全に同じ。 */
-    write(`${L.prefix}invite/index.html`, withPromoterRuntime(
-      R.renderEventPage(tplEvent, inviteEvent, inviteBlocksFor(current.id), ctxFor(L.baseArchive, 'invite/', L.lang, { invite: true, noindex: true }))));
+    write(`${L.prefix}invite/index.html`, withEndedRuntime(withPromoterRuntime(
+      R.renderEventPage(tplEvent, inviteEvent, inviteBlocksFor(current.id), ctxFor(L.baseArchive, 'invite/', L.lang, { invite: true, noindex: true }))), current, L.lang));
     /* プロモーター固定の招待バリアント（CTA遷移先に promoter を固定・限定公開）。/invite/<slug>/ は invite/ より1階層深い。
        こちらは promoter を埋め込み済みの静的ページのまま。実行時スニペットは入れない
        （?n= で別人に上書きできてしまうと、配った本人の実績が横取りされ得るため）。 */
     for (const P of PROMOTERS) {
-      write(`${L.prefix}invite/${P.slug}/index.html`,
-        R.renderEventPage(tplEvent, inviteEventFor(P.promoter), inviteBlocksFor(current.id, P.promoter), ctxFor(L.baseArchive + '../', `invite/${P.slug}/`, L.lang, { invite: true, noindex: true })));
+      write(`${L.prefix}invite/${P.slug}/index.html`, withEndedRuntime(
+        R.renderEventPage(tplEvent, inviteEventFor(P.promoter), inviteBlocksFor(current.id, P.promoter), ctxFor(L.baseArchive + '../', `invite/${P.slug}/`, L.lang, { invite: true, noindex: true })), current, L.lang));
     }
   }
 
@@ -283,15 +363,15 @@ for (const L of LANGS) {
      階層は invite/<slug>/ と同じ深さなので base も同じ扱い。 */
   if (current) {
     for (const P of PROMOTERS) {
-      write(`${L.prefix}p/${P.slug}/index.html`,
-        R.renderEventPage(tplEvent, promoterEventFor(P.promoter), promoterBlocksFor(current.id, P.promoter), ctxFor(L.baseArchive + '../', `p/${P.slug}/`, L.lang, { noindex: true })));
+      write(`${L.prefix}p/${P.slug}/index.html`, withEndedRuntime(
+        R.renderEventPage(tplEvent, promoterEventFor(P.promoter), promoterBlocksFor(current.id, P.promoter), ctxFor(L.baseArchive + '../', `p/${P.slug}/`, L.lang, { noindex: true })), current, L.lang));
     }
 
     /* /p/ 1枚で全プロモーターを賄う版（?n=<名前>）。
        promoter を空でレンダリングし、リンクの付与は実行時スニペットに任せる。
        これにより新しいプロモーターの追加にビルドもデプロイも要らなくなる。 */
-    write(`${L.prefix}p/index.html`, withPromoterRuntime(
-      R.renderEventPage(tplEvent, promoterEventFor(''), promoterBlocksFor(current.id, ''), ctxFor(L.baseArchive, 'p/', L.lang, { noindex: true }))));
+    write(`${L.prefix}p/index.html`, withEndedRuntime(withPromoterRuntime(
+      R.renderEventPage(tplEvent, promoterEventFor(''), promoterBlocksFor(current.id, ''), ctxFor(L.baseArchive, 'p/', L.lang, { noindex: true }))), current, L.lang));
   }
 }
 

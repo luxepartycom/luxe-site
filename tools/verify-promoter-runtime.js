@@ -19,10 +19,20 @@ const A = (n, c) => { if (c) { pass++; console.log('  ✅ ' + n); } else { fail+
 const ROOT = path.join(__dirname, '..');
 const HTML = fs.readFileSync(path.join(ROOT, 'p/index.html'), 'utf8');
 
+// 開催終了後はページ側のスクリプトがCTAを次回集客へ差し替える（別途 verify-ended-runtime.js で検証）。
+// ここではプロモーター固定そのものを見たいので、時刻を「開催中」に固定して実行する。
+const END_MS = (function () { const m = HTML.match(/var END = (\d+);/); return m ? Number(m[1]) : 0; })();
+const DURING = END_MS ? END_MS - 3600 * 1000 : Date.now();
+/* VIPボタンは「開催中のみ」ビルド時に生成される（render.js の past 分岐）。
+   終了後は要素そのものが無いため、時刻を偽装しても復活しない。
+   よってVIP関連の検証は開催中のみ行い、終了後の挙動は verify-ended-runtime.js が担当する。 */
+const ON_SALE = END_MS ? Date.now() < END_MS : true;
+if (!ON_SALE) console.log("  ※ 直近イベントは終了済み。VIP導線はビルド時に除外されるため、該当項目はスキップします");
 function open(search) {
   const dom = new JSDOM(HTML, {
     runScripts: 'dangerously',
-    url: 'https://luxepartycom.github.io/luxe-site/p/' + search
+    url: 'https://luxepartycom.github.io/luxe-site/p/' + search,
+    beforeParse(w) { w.Date.now = function () { return DURING; }; }
   });
   return dom;
 }
@@ -38,7 +48,7 @@ console.log('\n── ?n= 指定あり ─────────────�
   A('申込リンクが存在する', es.length > 0);
   A('全ての申込リンクに promoter が付く', es.every(h => h.includes('promoter=' + encodeURIComponent(NAME))));
   const vip = es.filter(h => h.includes('vip-plan.html'));
-  A('VIPリンクがある（LINEではない）', vip.length > 0);
+  if (ON_SALE) A('VIPリンクがある（LINEではない）', vip.length > 0);
   A('VIPにも promoter が付く', vip.every(h => h.includes('promoter=')));
   A('VIPのイベントIDが EV-… である', vip.every(h => /[?&]e=EV-[A-Z0-9]+/.test(h)));
   const entry = es.filter(h => h.includes('index.html?e='));
@@ -92,7 +102,7 @@ console.log("\n── VIP支払方法の固定（?pay=）───────�
 {
   const dom = open("?n=" + encodeURIComponent("山田太郎"));
   const vip = entryLinks(dom.window.document).filter(h => h.includes("vip-plan.html"));
-  A("既定で銀行振込に固定される(pay=transfer)", vip.length > 0 && vip.every(h => /[?&]pay=transfer/.test(h)));
+  if (ON_SALE) A("既定で銀行振込に固定される(pay=transfer)", vip.length > 0 && vip.every(h => /[?&]pay=transfer/.test(h)));
   A("promoter も同時に付く", vip.every(h => h.includes("promoter=")));
   dom.window.close();
 }
@@ -116,7 +126,7 @@ console.log("\n── VIP支払方法の固定（?pay=）───────�
 {
   const dom = open("?n=" + encodeURIComponent("山田太郎") + "&pay=both");
   const vip = entryLinks(dom.window.document).filter(h => h.includes("vip-plan.html"));
-  A("pay=both で支払方法の指定が消える（両方表示）", vip.length > 0 && vip.every(h => !/[?&]pay=/.test(h)));
+  if (ON_SALE) A("pay=both で支払方法の指定が消える（両方表示）", vip.length > 0 && vip.every(h => !/[?&]pay=/.test(h)));
   A("pay=both でも promoter は残る", vip.every(h => h.includes("promoter=")));
   A("pay=both でURLが壊れない", vip.every(h => { try { new URL(h); return /[?&]e=EV-/.test(h); } catch(e){ return false; } }));
   dom.window.close();

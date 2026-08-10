@@ -18,10 +18,16 @@ const A = (n, c) => { if (c) { pass++; console.log('  ✅ ' + n); } else { fail+
 const ROOT = path.join(__dirname, '..');
 const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
+/* 開催終了後はページ側のスクリプトがCTAを次回集客へ差し替える
+   （別途 tools/verify-ended-runtime.js で検証）。
+   ここでは招待版の紹介者固定そのものを見たいので、時刻を「開催中」に固定して実行する。 */
+const END_MS = (function () { const m = read('invite/index.html').match(/var END = (\d+);/); return m ? Number(m[1]) : 0; })();
+const DURING = END_MS ? END_MS - 3600 * 1000 : Date.now();
 function open(file, search) {
   return new JSDOM(read(file), {
     runScripts: 'dangerously',
-    url: 'https://luxepartycom.github.io/luxe-site/' + path.dirname(file) + '/' + search
+    url: 'https://luxepartycom.github.io/luxe-site/' + path.dirname(file) + '/' + search,
+    beforeParse(w) { w.Date.now = function () { return DURING; }; }
   });
 }
 const entryLinks = doc => [...doc.querySelectorAll('a[href^="https://entry.luxepartytokyo.com/"]')].map(a => a.getAttribute('href'));

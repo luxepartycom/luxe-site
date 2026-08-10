@@ -146,5 +146,44 @@
   })();
 })();
 </script>
+<script>
+(function(){
+  // 開催終了時刻（ミリ秒・JST基準で算出済み）。過ぎていたら購入導線を次回集客へ差し替える。
+  var END = 1766242740000;
+  if (Date.now() < END) return;
+  var LINE = "https://lin.ee/zGh0dYy", IG = "https://www.instagram.com/luxe_party_tokyo/";
+  function repl(el, href, text, cls) {
+    if (!el) return;
+    if (!href) { el.remove(); return; }
+    el.setAttribute("href", href);
+    el.setAttribute("target", "_blank");
+    el.setAttribute("rel", "noopener");
+    el.textContent = text;
+    if (cls) el.className = cls;
+  }
+  // ヒーロー：主ボタン=LINE、副ボタン（過去のイベント）はそのまま残す
+  var hero = document.querySelector(".hero-cta .btn-fill");
+  repl(hero, LINE, "LINEで次回のご案内を受け取る", "btn btn-fill");
+  // 常時表示バー：チケット→LINE、VIP→Instagram
+  repl(document.querySelector(".sticky-cta .scta-fill"), LINE, "LINEで次回のご案内を受け取る", "scta-btn scta-fill");
+  repl(document.querySelector(".sticky-cta .scta-line"), IG,   "Instagramをフォロー", "scta-btn scta-line");
+  // ヘッダーの小さなCTA
+  repl(document.querySelector(".cta-mini"), LINE, "LINE", "cta-mini");
+  // 本文中のエントリーセクションのボタン（ヒーロー以外）
+  Array.prototype.forEach.call(document.querySelectorAll(".sec .hero-cta .btn-fill"), function (b) {
+    repl(b, LINE, "LINEで次回のご案内を受け取る", "btn btn-fill");
+  });
+  // 終了した旨を明示する。黙って差し替えるとお客様が混乱するため。
+  var host = document.querySelector(".hero-cta");
+  if (host && !document.getElementById("ended-notice")) {
+    var n = document.createElement("div");
+    n.id = "ended-notice";
+    n.style.cssText = "margin-bottom:14px;font-size:0.72rem;letter-spacing:0.08em;color:#D8B26A;line-height:1.9;";
+    n.textContent = "本イベントは終了しました。次回開催をお待ちください。";
+    host.parentNode.insertBefore(n, host);
+  }
+  document.documentElement.setAttribute("data-event-ended", "1");
+})();
+</script>
 </body>
 </html>

@@ -23,14 +23,14 @@
 <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="stylesheet" href="../../../assets/site.css">
 
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Event","name":"LUXE POOL PARTY","startDate":"2026-08-09T18:00:00+09:00","endDate":"2026-08-09T21:30:00+09:00","eventStatus":"https://schema.org/EventScheduled","eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","description":"A private resort for one night, in the heart of the city.","organizer":{"@type":"Organization","name":"LUXE PARTY TOKYO","url":"https://luxepartycom.github.io/luxe-site/"},"location":{"@type":"Place","name":"歌舞伎町タワー 5F プールエリア","address":{"@type":"PostalAddress","addressLocality":"東京","addressCountry":"JP"}},"image":["https://drive.google.com/thumbnail?id=1QqZOz8np21UsQa2hgDZRm8s1u5QxpDz0&sz=w2000"]}</script>
+
 </head>
 <body>
 
 <header>
   <a class="brand" href="../../../en/">LUXE <span>PARTY</span> TOKYO</a>
   <nav class="desk"><a href="../../../en/">CURRENT</a><a href="../../../en/archive/">ARCHIVE</a></nav>
-  <div class="head-right"><a class="lang-switch" href="../../../invite/daiko/" hreflang="ja" lang="ja">日本語</a><a class="cta-mini" href="https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&amp;type=free&amp;promoter=LUXE_Daiko" target="_blank" rel="noopener">RSVP</a></div>
+  <div class="head-right"><a class="lang-switch" href="../../../invite/daiko/" hreflang="ja" lang="ja">日本語</a><a class="cta-mini" href="../../../en/archive/">ARCHIVE</a></div>
 </header>
 
 <main>
@@ -38,11 +38,11 @@
     <div class="hero-media"><video class="hero-vid" src="../../../videos/hero.mp4" autoplay muted loop playsinline preload="metadata" poster="../../../assets/2026-08-09-luxe-pool-party/hero.36fe889f.jpg"></video></div>
     <div class="beam" aria-hidden="true"></div>
     <div class="hero-inner">
-      <span class="invite-badge">関係者ご招待 <span>/ Invitation</span></span>
+      <span class="ended-badge">ENDED</span><span class="invite-badge">関係者ご招待 <span>/ Invitation</span></span>
       <p class="edition">IBIZA VIBES</p>
       <h1>LUXE POOL PARTY</h1>
       <dl class="facts"><div class="fact"><dt>Date</dt><dd>2026.08.09 <small>SUN</small></dd></div><div class="fact"><dt>Time</dt><dd>18:00<small> — 21:30</small></dd></div><div class="fact"><dt>Venue</dt><dd>Kabukicho Tower 5F, Pool Area</dd></div></dl>
-      <div class="hero-cta"><a class="btn btn-fill" href="https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&amp;type=free&amp;promoter=LUXE_Daiko" target="_blank" rel="noopener">RSVP FREE</a><a class="btn btn-line" href="../../../en/archive/">Past Events</a></div>
+      <div class="hero-cta"><a class="btn btn-line" href="../../../en/archive/">Past Events</a></div>
     </div>
   </section>
 
@@ -61,7 +61,7 @@
   <p class="copy">© LUXE PARTY TOKYO</p>
 </footer>
 
-<div class="sticky-cta"><div class="scta-inner"><span class="scta-title">LUXE POOL PARTY</span><span class="scta-btns"><a class="scta-btn scta-fill" href="https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&amp;type=free&amp;promoter=LUXE_Daiko" target="_blank" rel="noopener">RSVP FREE</a></span></div></div>
+
 
 <script>
 (function(){
@@ -150,6 +150,45 @@
       new IntersectionObserver(function(es){ es.forEach(function(e){ if(!e.isIntersecting && cur===hero){ muteAll(); } }); }, { threshold:0.2 }).observe(hero);
     }
   })();
+})();
+</script>
+<script>
+(function(){
+  // 開催終了時刻（ミリ秒・JST基準で算出済み）。過ぎていたら購入導線を次回集客へ差し替える。
+  var END = 1786278600000;
+  if (Date.now() < END) return;
+  var LINE = "https://lin.ee/zGh0dYy", IG = "https://www.instagram.com/luxe_party_tokyo/";
+  function repl(el, href, text, cls) {
+    if (!el) return;
+    if (!href) { el.remove(); return; }
+    el.setAttribute("href", href);
+    el.setAttribute("target", "_blank");
+    el.setAttribute("rel", "noopener");
+    el.textContent = text;
+    if (cls) el.className = cls;
+  }
+  // ヒーロー：主ボタン=LINE、副ボタン（過去のイベント）はそのまま残す
+  var hero = document.querySelector(".hero-cta .btn-fill");
+  repl(hero, LINE, "Get updates on LINE", "btn btn-fill");
+  // 常時表示バー：チケット→LINE、VIP→Instagram
+  repl(document.querySelector(".sticky-cta .scta-fill"), LINE, "Get updates on LINE", "scta-btn scta-fill");
+  repl(document.querySelector(".sticky-cta .scta-line"), IG,   "Follow on Instagram", "scta-btn scta-line");
+  // ヘッダーの小さなCTA
+  repl(document.querySelector(".cta-mini"), LINE, "LINE", "cta-mini");
+  // 本文中のエントリーセクションのボタン（ヒーロー以外）
+  Array.prototype.forEach.call(document.querySelectorAll(".sec .hero-cta .btn-fill"), function (b) {
+    repl(b, LINE, "Get updates on LINE", "btn btn-fill");
+  });
+  // 終了した旨を明示する。黙って差し替えるとお客様が混乱するため。
+  var host = document.querySelector(".hero-cta");
+  if (host && !document.getElementById("ended-notice")) {
+    var n = document.createElement("div");
+    n.id = "ended-notice";
+    n.style.cssText = "margin-bottom:14px;font-size:0.72rem;letter-spacing:0.08em;color:#D8B26A;line-height:1.9;";
+    n.textContent = "This event has ended. Please stay tuned for the next one.";
+    host.parentNode.insertBefore(n, host);
+  }
+  document.documentElement.setAttribute("data-event-ended", "1");
 })();
 </script>
 </body>
