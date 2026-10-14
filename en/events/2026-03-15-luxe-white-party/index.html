@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="LUXE PARTY TOKYO">
 <meta property="og:title" content="White Dress Code Night | LUXE PARTY TOKYO">
 <meta property="og:description" content="2026.03.15 at 恵比寿 LEDIAN Lounge.">
-<meta property="og:image" content="">
+<meta property="og:image" content="https://luxepartytokyo.com/assets/2026-03-15-luxe-white-party/hero.jpg">
 <meta property="og:url" content="https://luxepartytokyo.com/en/events/2026-03-15-luxe-white-party/">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
@@ -35,7 +35,7 @@
 
 <main>
   <section class="hero" data-end="1773586740000">
-    <div class="hero-media"><video class="hero-vid" src="../../../videos/past-white.mp4" autoplay muted loop playsinline preload="metadata"></video></div>
+    <div class="hero-media has-video"><video class="hero-vid" src="../../../videos/past-white.mp4" autoplay muted loop playsinline preload="metadata" poster="../../../assets/2026-03-15-luxe-white-party/hero.jpg"></video></div>
     <script>
     /* 動画ファーストのヒーロー（2026-10-14）：最初は動画だけを見せ、少しでもスクロールしたら文字を下からせり上げる。
        動画が無い・動きを減らす設定・途中の位置から開いた・スクリプトが失敗した場合は、最初から全部見せる。 */
@@ -185,6 +185,30 @@
       new IntersectionObserver(function(es){ es.forEach(function(e){ if(!e.isIntersecting && cur===hero){ muteAll(); } }); }, { threshold:0.2 }).observe(hero);
     }
   })();
+})();
+</script>
+<script>
+/* 動画は画面に入っている間だけ再生する（2026-10-14 かくつき対策）。
+   ヒーロー以外は data-autoplay（preload="none"）で、近づいたら読み込んで再生・離れたら一時停止。
+   ヒーローも画面外では止める。IntersectionObserver が無い環境では従来どおり全部再生する。 */
+(function(){
+  var vids = Array.prototype.slice.call(document.querySelectorAll("video.hero-vid, video[data-autoplay]"));
+  if (!vids.length) return;
+  function play(v){ try { var p = v.play(); if (p && p.catch) p.catch(function(){}); } catch (e) {} }
+  if (!("IntersectionObserver" in window)) { vids.forEach(play); return; }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      var v = e.target;
+      if (e.isIntersecting) { if (v.preload === "none") v.preload = "metadata"; play(v); }
+      else {
+        // 画面外に出たら止める。音声を出していた動画なら音声も切る（戻ったときに勝手に鳴らさない・ボタン表示を合わせる）
+        var A = window.__luxeAudio;
+        if (A && A.current && A.current() === v) A.muteAll();
+        if (!v.paused) v.pause();
+      }
+    });
+  }, { rootMargin: "200px 0px" });
+  vids.forEach(function (v) { io.observe(v); });
 })();
 </script>
 <script>

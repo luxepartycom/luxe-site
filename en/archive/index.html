@@ -37,7 +37,7 @@
     <span class="eyebrow">Archive</span>
     <h2 class="sec-title">Past <em>Events</em></h2>
     <p class="sec-sub">5 nights on record. Tap a photo to open that night.</p>
-    <h3 class="wall-year">2026</h3><div class="wall"><a class="wall-card" href="../../en/events/2026-08-09-luxe-pool-party/"><video src="../../videos/hero.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="wall-meta"><span class="wall-date">2026.08.09</span><span class="wall-title">LUXE POOL PARTY</span></span></a><a class="wall-card" href="../../en/events/2026-07-20-luxe-3rd-anniversary/"><video src="../../videos/past-3rd.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="wall-meta"><span class="wall-date">2026.07.20</span><span class="wall-title">LUXE 3rd Anniversary Party</span></span></a><a class="wall-card" href="../../en/events/2026-04-26-spring-collection/"><video src="../../videos/past-spring.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="wall-meta"><span class="wall-date">2026.04.26</span><span class="wall-title">Luxe Spring Collection 2026</span></span></a><a class="wall-card" href="../../en/events/2026-03-15-luxe-white-party/"><video src="../../videos/past-white.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="wall-meta"><span class="wall-date">2026.03.15</span><span class="wall-title">White Dress Code Night</span></span></a></div><h3 class="wall-year">2025</h3><div class="wall"><a class="wall-card" href="../../en/events/2025-12-20-christmas-party/"><video src="../../videos/past-christmas.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="wall-meta"><span class="wall-date">2025.12.20</span><span class="wall-title">Luxe Christmas Party 2025</span></span></a></div>
+    <h3 class="wall-year">2026</h3><div class="wall"><a class="wall-card" href="../../en/events/2026-08-09-luxe-pool-party/"><video src="../../videos/hero.mp4" data-autoplay muted loop playsinline preload="none" poster="../../assets/2026-08-09-luxe-pool-party/hero.36fe889f.jpg"></video><span class="wall-meta"><span class="wall-date">2026.08.09</span><span class="wall-title">LUXE POOL PARTY</span></span></a><a class="wall-card" href="../../en/events/2026-07-20-luxe-3rd-anniversary/"><video src="../../videos/past-3rd.mp4" data-autoplay muted loop playsinline preload="none" poster="../../assets/2026-07-20-luxe-3rd-anniversary/hero.jpg"></video><span class="wall-meta"><span class="wall-date">2026.07.20</span><span class="wall-title">LUXE 3rd Anniversary Party</span></span></a><a class="wall-card" href="../../en/events/2026-04-26-spring-collection/"><video src="../../videos/past-spring.mp4" data-autoplay muted loop playsinline preload="none" poster="../../assets/2026-04-26-spring-collection/hero.jpg"></video><span class="wall-meta"><span class="wall-date">2026.04.26</span><span class="wall-title">Luxe Spring Collection 2026</span></span></a><a class="wall-card" href="../../en/events/2026-03-15-luxe-white-party/"><video src="../../videos/past-white.mp4" data-autoplay muted loop playsinline preload="none" poster="../../assets/2026-03-15-luxe-white-party/hero.jpg"></video><span class="wall-meta"><span class="wall-date">2026.03.15</span><span class="wall-title">White Dress Code Night</span></span></a></div><h3 class="wall-year">2025</h3><div class="wall"><a class="wall-card" href="../../en/events/2025-12-20-christmas-party/"><video src="../../videos/past-christmas.mp4" data-autoplay muted loop playsinline preload="none" poster="../../assets/2025-12-20-christmas-party/hero.jpg"></video><span class="wall-meta"><span class="wall-date">2025.12.20</span><span class="wall-title">Luxe Christmas Party 2025</span></span></a></div>
   </section>
 </main>
 
@@ -106,6 +106,30 @@
       v._sb = btn;
     })(vids[j]); }
   })();
+})();
+</script>
+<script>
+/* 動画は画面に入っている間だけ再生する（2026-10-14 かくつき対策）。
+   ヒーロー以外は data-autoplay（preload="none"）で、近づいたら読み込んで再生・離れたら一時停止。
+   ヒーローも画面外では止める。IntersectionObserver が無い環境では従来どおり全部再生する。 */
+(function(){
+  var vids = Array.prototype.slice.call(document.querySelectorAll("video.hero-vid, video[data-autoplay]"));
+  if (!vids.length) return;
+  function play(v){ try { var p = v.play(); if (p && p.catch) p.catch(function(){}); } catch (e) {} }
+  if (!("IntersectionObserver" in window)) { vids.forEach(play); return; }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      var v = e.target;
+      if (e.isIntersecting) { if (v.preload === "none") v.preload = "metadata"; play(v); }
+      else {
+        // 画面外に出たら止める。音声を出していた動画なら音声も切る（戻ったときに勝手に鳴らさない・ボタン表示を合わせる）
+        var A = window.__luxeAudio;
+        if (A && A.current && A.current() === v) A.muteAll();
+        if (!v.paused) v.pause();
+      }
+    });
+  }, { rootMargin: "200px 0px" });
+  vids.forEach(function (v) { io.observe(v); });
 })();
 </script>
 </body>

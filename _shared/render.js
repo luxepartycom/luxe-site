@@ -358,8 +358,10 @@ function renderBlocks(blocks, ev, ctx) {
         // 動画(Drive/直リンク)があれば自動再生リール。次にInstagram埋め込み、無ければ写真カード。
         var vsrc = videoSrc(pe.heroVideo || pe.video, ctx.base);
         if (vsrc) {
+          // 読み込み前の表紙にイベント写真を出す（preload="none" で黒い箱にしない）
+          var pPoster = imgUrl(ctx, pe.id, parseImageRef(pe.heroImage).file);
           return '<div class="pastcard pastcard-reel">' +
-            '<div class="reel"><video src="' + esc(vsrc) + '" autoplay muted loop playsinline preload="metadata"></video></div>' +
+            '<div class="reel"><video src="' + esc(vsrc) + '" data-autoplay muted loop playsinline preload="none"' + (pPoster ? ' poster="' + esc(pPoster) + '"' : '') + '></video></div>' +
             cap + '</div>';
         }
         // 動画が無い場合は写真/リンクカード。Instagram投稿があれば外部リンク、無ければ詳細ページ。
@@ -453,7 +455,7 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     : '';
 
   // 構造化データ（Event schema）＝Google検索のリッチ表示（開催予定のみ）
-  var ogpFull = ogpUrl ? (/^https?:\/\//.test(ogpUrl) ? ogpUrl : ctx.baseUrl + ogpUrl.replace(/^\.*\//, '')) : '';
+  var ogpFull = ogpUrl ? (/^https?:\/\//.test(ogpUrl) ? ogpUrl : ctx.baseUrl + ogpUrl.replace(/^(?:\.{1,2}\/)+/, '')) : '';
   var jsonld = '';
   if (!past) {
     var ld = {
@@ -489,7 +491,7 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     '{{CANONICAL}}': esc(i.canonical),
     '{{ROBOTS}}': ctx.noindex ? '<meta name="robots" content="noindex, nofollow">' : '',
     '{{SITE_NAME}}': esc(ctx.siteName),
-    '{{OGP}}': esc(ogpUrl ? (/^https?:\/\//.test(ogpUrl) ? ogpUrl : ctx.baseUrl + ogpUrl.replace(/^\.*\//, '')) : ''),
+    '{{OGP}}': esc(ogpUrl ? (/^https?:\/\//.test(ogpUrl) ? ogpUrl : ctx.baseUrl + ogpUrl.replace(/^(?:\.{1,2}\/)+/, '')) : ''),
     '{{BASE}}': ctx.base,
     '{{BRAND_HTML}}': ctx.brandHtml,
     '{{NAV}}': i.nav,
@@ -497,7 +499,7 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     '{{FOOTER_LINKS}}': i.footer,
     '{{HERO_MEDIA}}': (function () {
       var hv = videoSrc(ev.heroVideo, ctx.base);
-      if (hv) return '<div class="hero-media"><video class="hero-vid" src="' + esc(hv) + '" autoplay muted loop playsinline preload="metadata"' + (heroUrl ? ' poster="' + esc(heroUrl) + '"' : '') + '></video></div>';
+      if (hv) return '<div class="hero-media has-video"><video class="hero-vid" src="' + esc(hv) + '" autoplay muted loop playsinline preload="metadata"' + (heroUrl ? ' poster="' + esc(heroUrl) + '"' : '') + '></video></div>';
       return heroUrl ? '<div class="hero-media"><img src="' + esc(heroUrl) + '" alt="' + esc(heroRef.alt) + '" fetchpriority="high" decoding="async"></div>' : '';
     })(),
     '{{ANALYTICS}}': analyticsHtml(ctx) + (hasLineCta ? lineTrackingHtml(ctx) : ''),
@@ -534,7 +536,7 @@ function renderArchivePage(tpl, events, ctx) {
       var url = imgUrl(ctx, ev.id, r.file);
       var vsrc = videoSrc(ev.heroVideo, ctx.base);
       var media = vsrc
-        ? '<video src="' + esc(vsrc) + '" autoplay muted loop playsinline preload="metadata"></video>'
+        ? '<video src="' + esc(vsrc) + '" data-autoplay muted loop playsinline preload="none"' + (url ? ' poster="' + esc(url) + '"' : '') + '></video>'
         : url
           ? '<img src="' + esc(url) + '" alt="' + esc(r.alt) + '" loading="lazy" decoding="async">'
           : '<div style="aspect-ratio:3/4;background:linear-gradient(150deg,var(--smoke),var(--ink))"></div>';

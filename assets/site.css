@@ -492,3 +492,17 @@ html.hero-gate:not(.hero-revealed) .scroll-cue{display:flex; flex-direction:colu
 .vid-sound-hero{top:calc(72px + env(safe-area-inset-top, 0px))} /* ヒーローは固定ヘッダーの下に出す（隠れ防止） */
 .reel video, .wall-card video{cursor:pointer}
 video[data-audio="on"]{outline:1px solid rgba(216,178,106,.55); outline-offset:-1px}
+
+
+/* ---- かくつき対策（2026-10-14）：動画の上で毎フレーム再計算される効果を外す。見た目はほぼ同じ ---- */
+/* すりガラス（backdrop-filter）→ 濃い半透明の背景 */
+header{-webkit-backdrop-filter:none; backdrop-filter:none}
+header.scrolled{background:rgba(8,7,12,.9); -webkit-backdrop-filter:none; backdrop-filter:none}
+.sticky-cta{background:rgba(8,7,12,.94); -webkit-backdrop-filter:none; backdrop-filter:none}
+.vid-sound{background:rgba(11,10,16,.72); -webkit-backdrop-filter:none; backdrop-filter:none}
+/* 粒子：動画との色合成（mix-blend-mode）をやめ、薄く重ねるだけにする */
+body::before{mix-blend-mode:normal; opacity:.035}
+/* 動画のあるヒーローでは光の帯を出さない（ぼかした大きな要素の常時アニメーション） */
+.hero:has(video.hero-vid) .beam{display:none}
+.hero-media.has-video ~ .beam{display:none}   /* :has() 非対応の古い Safari 向け */
+.reel video, .wall-card video{background:linear-gradient(150deg,var(--smoke),var(--ink))}

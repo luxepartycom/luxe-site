@@ -108,5 +108,29 @@
   })();
 })();
 </script>
+<script>
+/* 動画は画面に入っている間だけ再生する（2026-10-14 かくつき対策）。
+   ヒーロー以外は data-autoplay（preload="none"）で、近づいたら読み込んで再生・離れたら一時停止。
+   ヒーローも画面外では止める。IntersectionObserver が無い環境では従来どおり全部再生する。 */
+(function(){
+  var vids = Array.prototype.slice.call(document.querySelectorAll("video.hero-vid, video[data-autoplay]"));
+  if (!vids.length) return;
+  function play(v){ try { var p = v.play(); if (p && p.catch) p.catch(function(){}); } catch (e) {} }
+  if (!("IntersectionObserver" in window)) { vids.forEach(play); return; }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      var v = e.target;
+      if (e.isIntersecting) { if (v.preload === "none") v.preload = "metadata"; play(v); }
+      else {
+        // 画面外に出たら止める。音声を出していた動画なら音声も切る（戻ったときに勝手に鳴らさない・ボタン表示を合わせる）
+        var A = window.__luxeAudio;
+        if (A && A.current && A.current() === v) A.muteAll();
+        if (!v.paused) v.pause();
+      }
+    });
+  }, { rootMargin: "200px 0px" });
+  vids.forEach(function (v) { io.observe(v); });
+})();
+</script>
 </body>
 </html>

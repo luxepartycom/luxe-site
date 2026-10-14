@@ -27,6 +27,7 @@ run() {   # run <表示名> <検査ファイル> [検査する出力]
 run links             verify-links
 run line-mode         verify-line-mode
 run hero-gate         verify-hero-gate
+run video-perf        verify-video-perf
 run links@ticket      verify-links            "$TK/out"
 run ended@ticket      verify-ended-runtime    "$TK/out"
 run invite@ticket     verify-invite-runtime   "$TK/out"

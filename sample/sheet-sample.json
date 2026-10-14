@@ -40,7 +40,8 @@
       "venue": "1OAK",
       "instagram": "https://www.instagram.com/p/DbAlr19xche/",
       "published": true,
-      "heroVideo": "videos/past-3rd.mp4"
+      "heroVideo": "videos/past-3rd.mp4",
+      "heroImage": "hero.jpg|LUXE 3rd Anniversary Party"
     },
     {
       "id": "2026-04-26-spring-collection",
@@ -50,7 +51,8 @@
       "instagram": "https://www.instagram.com/p/DX3tjLixEfq/",
       "published": true,
       "day": "SUN",
-      "heroVideo": "videos/past-spring.mp4"
+      "heroVideo": "videos/past-spring.mp4",
+      "heroImage": "hero.jpg|Luxe Spring Collection 2026"
     },
     {
       "id": "2026-03-15-luxe-white-party",
@@ -59,7 +61,8 @@
       "venue": "恵比寿 LEDIAN Lounge",
       "instagram": "https://www.instagram.com/p/DWLzPuNEUOn/",
       "published": true,
-      "heroVideo": "videos/past-white.mp4"
+      "heroVideo": "videos/past-white.mp4",
+      "heroImage": "hero.jpg|White Dress Code Night"
     },
     {
       "id": "2025-12-20-christmas-party",
@@ -68,7 +71,8 @@
       "venue": "S TOKYO 西麻布",
       "instagram": "https://www.instagram.com/p/DUdLuQwkgf9/",
       "published": true,
-      "heroVideo": "videos/past-christmas.mp4"
+      "heroVideo": "videos/past-christmas.mp4",
+      "heroImage": "hero.jpg|Luxe Christmas Party 2025"
     },
     {
       "id": "2026-11-02-leather-fashion-party",
