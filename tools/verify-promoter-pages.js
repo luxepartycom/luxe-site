@@ -10,7 +10,8 @@
      （サイト内部スラッグを入れると申込が成立しない。実際に一度やらかした） */
 const fs = require('fs');
 const path = require('path');
-const ROOT = path.join(__dirname, '..');
+// 検査する生成物の場所（既定はリポジトリ直下。test-all.sh がチケット型の検査用出力を渡す）
+const ROOT = process.env.LUXE_CHECK_DIR || path.join(__dirname, '..');
 
 let pass = 0, fail = 0;
 const A = (n, c) => { if (c) { pass++; console.log('  ✅ ' + n); } else { fail++; console.log('  ❌ ' + n); } };

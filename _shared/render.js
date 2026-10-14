@@ -36,7 +36,7 @@ function lines(raw) {
 /* UI文言の対訳表。日本語と英語で共通の骨格を持つ。 */
 var UI_STRINGS = {
   ja: {
-    entry: 'チケットを購入する', entryFree: '無料で申し込む', lineAdd: 'LINEで友だち追加して詳細を受け取る', lineAddShort: 'LINEで詳細を受け取る', vip: 'VIPの詳細はこちら', pastEvents: '過去のイベント', currentEvent: '開催中のイベント',
+    entry: 'チケットを購入する', entryFree: '無料で申し込む', lineAdd: 'LINEで友だち追加して招待状を受け取る', lineAddShort: 'LINEで招待状を受け取る', askLine: 'LINEで問い合わせる', vip: 'VIPの詳細はこちら', pastEvents: '過去のイベント', currentEvent: '開催中のイベント',
     prevLabel: '前回のイベント', viewNight: 'この夜を見る', comingSoon: '近日発表',
     attention: '注意事項', privacy: 'プライバシーポリシー', tokusho: '特定商取引法に基づく表記',
     archiveEyebrow: 'Archive', archiveTitle: '過去開催<em>イベント</em>', archiveEmpty: 'まだ記録がありません。',
@@ -46,7 +46,7 @@ var UI_STRINGS = {
     archiveSub: function (n) { return n + '回分の記録。'; }
   },
   en: {
-    entry: 'BUY TICKET', entryFree: 'RSVP FREE', lineAdd: 'ADD US ON LINE', lineAddShort: 'ADD ON LINE', vip: 'VIP DETAILS', pastEvents: 'Past Events', currentEvent: 'Current Event',
+    entry: 'BUY TICKET', entryFree: 'RSVP FREE', lineAdd: 'ADD US ON LINE FOR YOUR INVITATION', lineAddShort: 'INVITATION ON LINE', askLine: 'ASK ON LINE', vip: 'VIP DETAILS', pastEvents: 'Past Events', currentEvent: 'Current Event',
     prevLabel: 'Previous Event', viewNight: 'View this night', comingSoon: 'Coming soon',
     attention: 'House Rules', privacy: 'Privacy Policy', tokusho: 'Commercial Transactions',
     archiveEyebrow: 'Archive', archiveTitle: 'Past <em>Events</em>', archiveEmpty: 'No records yet.',
@@ -88,7 +88,7 @@ function lineTrackingHtml(ctx) {
   if (!ga4 && !px) return '';
   return '<script>(function(){if(window.__luxeLineTrack)return;window.__luxeLineTrack=1;' +
     'document.addEventListener("click",function(e){var a=e.target&&e.target.closest&&e.target.closest(\'[data-cta="line"]\');if(!a)return;' +
-    'var p=a.getAttribute("data-cta-pos");if(!/^(hero|header|sticky|entry)$/.test(p||""))p="other";' +
+    'var p=a.getAttribute("data-cta-pos");if(!/^(hero|header|sticky|entry|vip)$/.test(p||""))p="other";' +
     (ga4 ? 'try{if(window.gtag)gtag("event","line_click",{position:p});}catch(_){}' : '') +
     (px ? 'try{if(window.fbq)fbq("trackCustom","LineClick",{position:p});}catch(_){}' : '') +
     '},true);})();</script>';
@@ -211,6 +211,13 @@ function renderBlocks(blocks, ev, ctx) {
       head = '<span class="eyebrow">' + esc(label) + '</span>' +
         (big ? '<h2 class="sec-title">' + esc(big) + '</h2>' : '');
     }
+    // 小見出し（subtitle）：セクションの中のまとまりに付ける。見出しの無いブロックに付けると前のセクションの続きになる（2026-10-14）
+    var bSub = loc(b, 'subtitle', lang);
+    if (bSub) {
+      var sp = String(bSub).split('|');
+      head += '<div class="sub-head"><span class="sub-eyebrow">' + esc(sp[0].trim()) + '</span>' +
+        ((sp[1] || '').trim() ? '<h3 class="sub-title">' + esc(sp[1].trim()) + '</h3>' : '') + '</div>';
+    }
     var inner = '';
 
     if (type === 'text') {
@@ -268,8 +275,21 @@ function renderBlocks(blocks, ev, ctx) {
       inner = '<div class="lineup' + (anyPhoto ? ' lineup-cards' : '') + '">' + arts.join('') + '</div>';
 
     } else if (type === 'table') {
+      // variant "vip"：一段格上のカード。LINE の遷移先があればカード全体を問い合わせリンクにする（2026-10-14）
+      var vip = String(b.variant || '').trim().toLowerCase() === 'vip';
+      var vipHref = vip ? lineHref(ev, ctx) : '';
       var cards = lines(bBody).map(function (l, i) {
         var p = l.split('|').map(function (s) { return s.trim(); });
+        if (vip) {
+          var body = '<div class="table-head"><span class="table-name">' + esc(p[0] || '') + '</span>' +
+            '<span class="table-price">' + esc(p[2] || '') + '</span></div>' +
+            (p[3] ? '<p class="table-meta">' + esc(p[3]) + '</p>' : '') +
+            (p[1] ? '<span class="table-seats">' + esc(p[1]) + '</span>' : '') +
+            (vipHref ? '<span class="table-ask">' + esc(T.askLine) + ' <span aria-hidden="true">→</span></span>' : '');
+          return vipHref
+            ? '<a class="table-card table-card-vip" href="' + esc(vipHref) + '" target="_blank" rel="noopener"' + lineAttrs('vip') + '>' + body + '</a>'
+            : '<div class="table-card table-card-vip">' + body + '</div>';
+        }
         return '<div class="table-card" data-rank="' + (i + 1) + '">' +
           '<div class="table-head"><span class="table-name">' + esc(p[0] || '') + '</span>' +
           '<span class="table-price">' + esc(p[2] || '') + '</span></div>' +
@@ -278,7 +298,7 @@ function renderBlocks(blocks, ev, ctx) {
           '</div>';
       });
       if (!cards.length) return;
-      inner = '<div class="tables">' + cards.join('') + '</div>';
+      inner = '<div class="tables' + (vip ? ' tables-vip' : '') + '">' + cards.join('') + '</div>';
 
     } else if (type === 'news') {
       var items2 = lines(bBody).map(function (l) {
@@ -378,7 +398,9 @@ function renderBlocks(blocks, ev, ctx) {
       return; // 未知のtypeは無視（シートの打ち間違いでページが壊れない）
     }
 
-    out.push('<section class="sec reveal" id="' + esc(slugify(anchor)) + '">' + head + inner + '</section>');
+    // 見出しの無いブロックは、ひとつ前の区画の続き（区切り線を出さず上の余白を詰める）。2026-10-14
+    var cont = !bTitle && out.length > 0;
+    out.push('<section class="sec reveal' + (cont ? ' sec-cont' : '') + '" id="' + esc(slugify(anchor)) + '">' + head + inner + '</section>');
   });
   return out.join('\n');
 }
@@ -452,6 +474,9 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     jsonld = '<script type="application/ld+json">' + JSON.stringify(ld).replace(/</g, '\\u003c') + '</script>';
   }
 
+  var blocksHtml = renderBlocks(blocks, ev, ctx);
+  // LINE へのリンク（LINE モードの CTA・VIP カード）があるページだけ、クリック計測を入れる
+  var hasLineCta = line || blocksHtml.indexOf('data-cta="line"') >= 0;
   var map = {
     '{{JSONLD}}': jsonld,
     '{{LANG}}': i.lang,
@@ -475,14 +500,15 @@ function renderEventPage(tpl, ev, blocks, ctx) {
       if (hv) return '<div class="hero-media"><video class="hero-vid" src="' + esc(hv) + '" autoplay muted loop playsinline preload="metadata"' + (heroUrl ? ' poster="' + esc(heroUrl) + '"' : '') + '></video></div>';
       return heroUrl ? '<div class="hero-media"><img src="' + esc(heroUrl) + '" alt="' + esc(heroRef.alt) + '" fetchpriority="high" decoding="async"></div>' : '';
     })(),
-    '{{ANALYTICS}}': analyticsHtml(ctx) + (line ? lineTrackingHtml(ctx) : ''),
+    '{{ANALYTICS}}': analyticsHtml(ctx) + (hasLineCta ? lineTrackingHtml(ctx) : ''),
     '{{ENDED_BADGE}}': past ? '<span class="ended-badge">ENDED</span>' : '',
     '{{INVITE_BADGE}}': ctx.invite ? '<span class="invite-badge">関係者ご招待 <span>/ Invitation</span></span>' : '',
     '{{EDITION}}': esc(ev.edition || ''),
     '{{H1}}': h1html,
     '{{FACTS}}': facts,
     '{{HERO_CTA}}': heroCta,
-    '{{BLOCKS}}': renderBlocks(blocks, ev, ctx),
+    '{{BLOCKS}}': blocksHtml,
+    '{{HERO_END}}': String(eventEndMs(ev) || ''),
     '{{SNS}}': ctx.snsHtml,
     '{{STICKY_CTA}}': stickyCta
   };

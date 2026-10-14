@@ -337,6 +337,14 @@ header.scrolled{padding-top:11px; padding-bottom:11px; border-bottom-color:var(-
 .sec + .sec{border-top:0}
 .sec + .sec::before{content:""; position:absolute; top:0; left:var(--pad); right:var(--pad); height:1px;
   background:linear-gradient(90deg,transparent,var(--line) 12%,rgba(216,178,106,.34) 50%,var(--line) 88%,transparent)}
+/* 見出しの無い区画＝前の区画の続き：区切り線を出さず、上の余白を詰める */
+.sec + .sec.sec-cont::before{display:none}
+.sec.sec-cont{padding-top:0}
+/* セクション内の小見出し（一般入場／PREMIUM AREA／VIP など） */
+.sub-head{margin:0 0 24px}
+.sec-title + .sub-head{margin-top:clamp(22px,4vw,36px)}
+.sub-eyebrow{display:block; font-family:var(--util); font-size:10px; letter-spacing:.32em; text-transform:uppercase; color:var(--champagne); opacity:.85; margin-bottom:8px}
+.sub-title{font-family:var(--display); font-weight:400; font-size:clamp(22px,4vw,32px); line-height:1.2; margin:0; text-wrap:balance}
 
 /* ---- ボタン：金グラデ＋シーン・スウィープ＋浮遊 ---- */
 .btn{font-size:11px; letter-spacing:.24em; padding:16px 32px; position:relative; overflow:hidden; isolation:isolate;
@@ -364,6 +372,30 @@ header.scrolled{padding-top:11px; padding-bottom:11px; border-bottom-color:var(-
 .hero-inner h1{animation-delay:.28s}
 .hero-inner .facts{animation-delay:.5s}
 .hero-inner .hero-cta{animation-delay:.64s}
+
+/* ---- 動画ファーストのヒーロー（2026-10-14）：hero-gate の間は動画だけ。hero-revealed で文字がせり上がる ---- */
+.hero-media video.hero-vid, .hero-media::after{transition:opacity 1.2s ease}
+.sticky-cta{transition:transform .7s var(--ease)}
+html.hero-gate .hero-inner > *{animation-name:none; opacity:0; transform:translateY(42px);
+  transition:opacity .5s ease, transform .5s ease; transition-delay:0s}
+html.hero-gate.hero-revealed .hero-inner > *{opacity:1; transform:none; transition-duration:1.15s; transition-timing-function:var(--ease)}
+html.hero-gate.hero-revealed .hero-inner .ended-badge{transition-delay:.08s}
+html.hero-gate.hero-revealed .hero-inner .edition{transition-delay:.16s}
+html.hero-gate.hero-revealed .hero-inner h1{transition-delay:.28s}
+html.hero-gate.hero-revealed .hero-inner .facts{transition-delay:.5s}
+html.hero-gate.hero-revealed .hero-inner .hero-cta{transition-delay:.64s}
+html.hero-gate:not(.hero-revealed) .hero-media video.hero-vid{opacity:.96}
+html.hero-gate:not(.hero-revealed) .hero-media::after{opacity:.3}
+html.hero-gate:not(.hero-revealed) .sticky-cta{transform:translateY(110%)}
+html.hero-instant .hero-inner > *, html.hero-instant .sticky-cta{transition:none !important}
+.scroll-cue{display:none}
+html.hero-gate:not(.hero-revealed) .scroll-cue{display:flex; flex-direction:column; align-items:center; gap:10px;
+  position:absolute; left:50%; bottom:calc(26px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); z-index:3;
+  background:none; border:0; cursor:pointer; color:var(--blush); font-family:var(--util); font-size:10px; letter-spacing:.34em;
+  padding:8px 12px; opacity:.85; animation:lux-rise 1.2s var(--ease) .6s both}
+.scroll-cue span{display:block; width:1px; height:42px; background:linear-gradient(to bottom, var(--champagne), transparent);
+  transform-origin:top; animation:cue-drop 2.2s ease-in-out infinite}
+@keyframes cue-drop{0%{transform:scaleY(0)} 50%{transform:scaleY(1)} 100%{transform:scaleY(1); opacity:0}}
 
 /* ---- ファクト（Date/Time/Venue）：縦罫で区切る編集的レイアウト ---- */
 .facts{gap:0}
@@ -408,6 +440,26 @@ header.scrolled{padding-top:11px; padding-bottom:11px; border-bottom-color:var(-
 .table-card:hover{transform:translateY(-4px)}
 .table-card[data-rank="1"]{background:linear-gradient(150deg, rgba(216,178,106,.13), rgba(11,10,16,.62))}
 .table-price{font-family:var(--display); font-style:italic; font-size:clamp(18px,2.6vw,23px); letter-spacing:.01em}
+
+/* ---- VIP カード：二重の額縁・上から差す金の光・ASK を金の斜体で（2026-10-14） ---- */
+.tables-vip{grid-template-columns:1fr !important}
+.table-card-vip{display:block; color:inherit; padding:clamp(30px,5vw,46px) clamp(26px,5vw,48px);
+  border:1px solid rgba(216,178,106,.7); border-radius:2px;
+  background:
+    radial-gradient(90% 120% at 50% -20%, rgba(216,178,106,.22), transparent 60%),
+    linear-gradient(160deg, #1a1426 0%, #0d0b12 70%);
+  box-shadow:inset 0 0 0 7px var(--ink), inset 0 0 0 8px rgba(216,178,106,.38), 0 24px 60px -30px rgba(216,178,106,.45);
+  --sheen:.34}
+.table-card-vip .table-name{font-size:clamp(28px,5.4vw,44px); letter-spacing:.08em}
+.table-card-vip .table-price{font-family:var(--display); font-style:italic; font-size:clamp(30px,5.6vw,48px); letter-spacing:.12em;
+  background:linear-gradient(100deg,#f3dfa8,var(--champagne) 45%,#a8823e); -webkit-background-clip:text; background-clip:text; color:transparent}
+.table-card-vip .table-meta{font-size:14px; color:rgba(233,221,201,.78)}
+.table-card-vip .table-seats{border-color:rgba(216,178,106,.45); color:var(--champagne)}
+.table-ask{position:relative; display:block; margin-top:22px; padding-top:18px; border-top:1px solid rgba(216,178,106,.25);
+  font-family:var(--util); font-size:11px; letter-spacing:.26em; color:var(--champagne)}
+.table-card-vip:hover{border-color:var(--champagne)}
+.table-card-vip:hover .table-ask span{display:inline-block; transform:translateX(4px); transition:transform .3s}
+.table-card-vip:focus-visible{outline:2px solid var(--champagne); outline-offset:4px}
 
 /* ---- アーカイブ壁／過去カード：角を締め、光学サイズ適用 ---- */
 .wall-card, .pastcard, .pastcard-reel, .prevevent{border-radius:2px}

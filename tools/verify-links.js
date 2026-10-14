@@ -3,7 +3,8 @@
    使い方: node tools/verify-links.js */
 const fs = require('fs');
 const path = require('path');
-const ROOT = path.join(__dirname, '..');
+// 検査する生成物の場所（既定はリポジトリ直下。test-all.sh がチケット型の検査用出力を渡す）
+const ROOT = process.env.LUXE_CHECK_DIR || path.join(__dirname, '..');
 
 /* 生成された HTML を全部集める */
 function walk(dir, acc) {
@@ -55,7 +56,9 @@ for (const page of pages) {
   const hasDefault = /hreflang="x-default"/.test(html);
   // attention/privacy/tokusho（法務）と 404 は多言語hreflang対象外
   const isExempt = /(^|\/)(attention|privacy|tokusho|404)\.html$/.test(rel);
-  if (isExempt) continue;
+  // LINE モードの派生URL（/p/・/invite/）はトップへ送るだけの noindex 転送ページ＝hreflang 対象外
+  const isRedirect = /http-equiv="refresh"/.test(html) && /noindex/.test(html);
+  if (isExempt || isRedirect) continue;
   if (!(hasJa && hasEn && hasDefault)) {
     console.log(`  ✗ hreflang不足: ${rel} (ja:${hasJa} en:${hasEn} x-default:${hasDefault})`);
     hreflangIssues++;

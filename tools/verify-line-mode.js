@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const { execFileSync, spawnSync } = require('child_process');
 const { JSDOM } = require('jsdom');
+const R = require('../_shared/render.js');
 
 const ROOT = path.join(__dirname, '..');
 const BUILD = path.join(__dirname, 'build-local.js');
@@ -24,6 +25,8 @@ const date = d.toISOString().slice(0, 10);
 const EID = date + '-line-test';
 function fixture(opts) {
   const f = JSON.parse(JSON.stringify(base));
+  // 実データの開催予定イベントは外す（このテストのイベントを必ずトップにするため）
+  f.events = f.events.filter(e => R.isPast(e, Date.now()));
   Object.assign(f.config, opts.config || {});
   f.events.push(Object.assign({
     id: EID, title: 'LINE TEST NIGHT', date, day: 'SAT', open: '20:00', close: '04:00',
@@ -33,7 +36,8 @@ function fixture(opts) {
   }, opts.event || {}));
   f.blocks.push(
     { eventId: EID, order: 1, type: 'entry', title: 'ENTRY|入場', body: '本文', link: 'https://' + ENTRY_DOMAIN + '/index.html?e=EV-TEST&type=paid', published: true },
-    { eventId: EID, order: 2, type: 'table', title: 'ENTRANCE|入場', body: 'MEN|¥20,000', published: true }
+    { eventId: EID, order: 2, type: 'table', title: 'ENTRANCE|入場', body: 'MEN|¥20,000', published: true },
+    { eventId: EID, order: 3, type: 'table', variant: 'vip', body: 'VIP SEAT | RAISE | ASK | LINEで', published: true }
   );
   return f;
 }
@@ -71,7 +75,7 @@ for (const lang of ['', 'en/']) {
   ok(html.indexOf('チケットを購入する') < 0 && html.indexOf('BUY TICKET') < 0, tag + '購入文言が無い');
   const cta = doc.querySelectorAll('[data-cta="line"]');
   const pos = Array.from(cta).map(a => a.getAttribute('data-cta-pos')).sort().join(',');
-  ok(pos === 'entry,header,hero,sticky', tag + 'LINEボタンが hero/header/sticky/entry の4箇所 (' + pos + ')');
+  ok(pos === 'entry,header,hero,sticky,vip', tag + 'LINEへのリンクが hero/header/sticky/entry/vip の5箇所 (' + pos + ')');
   ok(Array.from(cta).every(a => a.getAttribute('href') === LINE), tag + '全ボタンの遷移先が config.sns.line');
   ok(doc.querySelectorAll('.sticky-cta .scta-btn').length === 1, tag + '常時バーのボタンは1つ（VIPなし）');
   ok(doc.querySelector('.hero-cta .btn-fill') && doc.querySelector('.hero-cta .btn-fill').getAttribute('data-cta') === 'line', tag + '終了後スニペットが掴むヒーロー主ボタン＝LINE');
@@ -158,5 +162,13 @@ ok(D.status === 0, 'ビルド成功');
   ok(doc.querySelector('footer') ? doc.querySelector('footer').innerHTML.indexOf(LINE) >= 0 : true, 'フッターのSNSは共通LINEのまま');
 }
 
+console.log('E. LINE モードでないページの VIP カードも計測する');
+{
+  const E = build('e', { config: { ga4Id: 'G-TEST123' }, event: { ctaMode: '' } });
+  ok(E.status === 0, 'ビルド成功');
+  const html = E.read('index.html');
+  ok(/data-cta-pos="vip"/.test(html), 'VIP カードがある');
+  ok((html.match(/window\.__luxeLineTrack=1/g) || []).length === 1, 'LINE モードでなくても VIP カードがあれば計測を入れる');
+}
 console.log(fail ? `—— 失敗 ${fail}件 / 合格 ${pass}件 ——` : `—— 全合格 ✅（${pass}件）——`);
 process.exit(fail ? 1 : 0);

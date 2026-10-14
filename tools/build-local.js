@@ -261,6 +261,8 @@ function endedSnippet(ev, lang) {
 '    host.parentNode.insertBefore(n, host);',
 '  }',
 '  document.documentElement.setAttribute("data-event-ended", "1");',
+'  // 終了告知を動画ファーストのヒーローで隠さない（最初から全部見せる）',
+'  document.documentElement.classList.remove("hero-gate", "hero-revealed");',
 '})();',
 '</script>'
   ].join('\n');

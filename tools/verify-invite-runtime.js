@@ -15,7 +15,8 @@ const { JSDOM } = require('jsdom');
 
 let pass = 0, fail = 0;
 const A = (n, c) => { if (c) { pass++; console.log('  ✅ ' + n); } else { fail++; console.log('  ❌ ' + n); } };
-const ROOT = path.join(__dirname, '..');
+// 検査する生成物の場所（既定はリポジトリ直下。test-all.sh がチケット型の検査用出力を渡す）
+const ROOT = process.env.LUXE_CHECK_DIR || path.join(__dirname, '..');
 const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 /* 開催終了後はページ側のスクリプトがCTAを次回集客へ差し替える

@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Archivo:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../../../favicon-32.png"><link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
 <link rel="stylesheet" href="../../../assets/site.css">
 
 
@@ -34,8 +34,48 @@
 </header>
 
 <main>
-  <section class="hero">
+  <section class="hero" data-end="1766242740000">
     <div class="hero-media"><video class="hero-vid" src="../../../videos/past-christmas.mp4" autoplay muted loop playsinline preload="metadata"></video></div>
+    <script>
+    /* 動画ファーストのヒーロー（2026-10-14）：最初は動画だけを見せ、少しでもスクロールしたら文字を下からせり上げる。
+       動画が無い・動きを減らす設定・途中の位置から開いた・スクリプトが失敗した場合は、最初から全部見せる。 */
+    (function(){
+      try {
+        var d = document.documentElement;
+        if (!document.querySelector("video.hero-vid")) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        if ((window.scrollY || 0) > 4 || location.hash) return;
+        // 終了済みのイベントは最初から全部見せる（終了告知を隠さない・末尾の判定を待たない）
+        var end = +(document.querySelector(".hero") || { getAttribute: function () { return 0; } }).getAttribute("data-end") || 0;
+        if (end && Date.now() >= end) return;
+        d.classList.add("hero-gate");
+        var atTop = function () { return (window.scrollY || window.pageYOffset || 0) <= 2; };
+        var show = function () { d.classList.add("hero-revealed"); };
+        var hide = function () { d.classList.remove("hero-revealed"); };
+        // 一番上まで戻したら、また動画だけに戻す（2026-10-14 オーナー指示）
+        var reveal = function (e) {
+          if (e && e.type === "scroll") { if (atTop()) hide(); else show(); return; }
+          if (e && e.type === "keydown") {
+            if (/^(ArrowUp|PageUp|Home)$/.test(e.key)) { if (atTop()) hide(); return; }
+            if (!/^(ArrowDown|PageDown|End| |Spacebar)$/.test(e.key)) return;
+          }
+          if (e && e.type === "wheel" && e.deltaY <= 0) { if (atTop()) hide(); return; }
+          show();
+        };
+        ["wheel", "touchmove", "keydown", "scroll"].forEach(function (n) { window.addEventListener(n, reveal, { passive: true }); });
+        // キーボードやフォーカス移動で隠れたボタンに入ったら、その場で見せる（見えないボタンを操作させない）
+        document.addEventListener("focusin", function (e) {
+          var t = e.target;
+          // 動きなしで即座に出す（せり上がり途中の見えないボタンを押させない）
+          if (t && t.closest && t.closest(".hero-inner, .sticky-cta")) { d.classList.add("hero-instant"); show(); }
+        });
+        window.__luxeHeroReveal = reveal;
+      } catch (e) {
+        // 途中で失敗したら隠したままにしない（全部見せる）
+        try { document.documentElement.classList.remove("hero-gate", "hero-revealed"); } catch (_) {}
+      }
+    })();
+    </script>
     <div class="beam" aria-hidden="true"></div>
     <div class="hero-inner">
       <span class="ended-badge">ENDED</span>
@@ -44,6 +84,7 @@
       <dl class="facts"><div class="fact"><dt>Date</dt><dd>2025.12.20 <small></small></dd></div><div class="fact"><dt>Venue</dt><dd>S TOKYO 西麻布</dd></div></dl>
       <div class="hero-cta"><a class="btn btn-line" href="../../../en/archive/">Past Events</a></div>
     </div>
+    <button class="scroll-cue" type="button" onclick="window.__luxeHeroReveal&&window.__luxeHeroReveal()" aria-label="Scroll">SCROLL<span aria-hidden="true"></span></button>
   </section>
 
 
@@ -183,6 +224,8 @@
     host.parentNode.insertBefore(n, host);
   }
   document.documentElement.setAttribute("data-event-ended", "1");
+  // 終了告知を動画ファーストのヒーローで隠さない（最初から全部見せる）
+  document.documentElement.classList.remove("hero-gate", "hero-revealed");
 })();
 </script>
 </body>
