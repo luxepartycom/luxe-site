@@ -11,7 +11,7 @@ vc.on('jsdomError', e => jsErrors.push(e.message + (e.detail ? ' | ' + String(e.
 
 const dom = new JSDOM(html, {
   runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
-  url: 'https://luxepartycom.github.io/luxe-site/',
+  url: 'https://luxepartytokyo.com/',
   beforeParse(window){
     // jsdom は play()/pause() 未実装なのでモック（本番ブラウザでは実動）
     window.HTMLMediaElement.prototype.play = function(){ this.paused = false; return Promise.resolve(); };

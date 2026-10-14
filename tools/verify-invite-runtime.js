@@ -26,7 +26,7 @@ const DURING = END_MS ? END_MS - 3600 * 1000 : Date.now();
 function open(file, search) {
   return new JSDOM(read(file), {
     runScripts: 'dangerously',
-    url: 'https://luxepartycom.github.io/luxe-site/' + path.dirname(file) + '/' + search,
+    url: 'https://luxepartytokyo.com/' + path.dirname(file) + '/' + search,
     beforeParse(w) { w.Date.now = function () { return DURING; }; }
   });
 }

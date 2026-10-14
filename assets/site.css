@@ -98,7 +98,7 @@ body{overflow-x:hidden}
 .sec:has(> .figure){padding:0}
 .sec:has(> .figure) > .eyebrow,
 .sec:has(> .figure) > .sec-title{padding:clamp(40px,7vw,80px) var(--pad) 0}
-.figure{margin:0; overflow:hidden; position:relative}
+.figure{margin-inline:auto; margin-block:clamp(24px,4vw,48px); max-width:520px; overflow:hidden; position:relative}
 .figure img{width:100%; height:auto; object-fit:contain; border:1px solid var(--line); display:block;
   transform:scale(1.14); transition:transform 1.6s cubic-bezier(.16,.7,.3,1)}
 .reveal.in .figure img{transform:scale(1)}

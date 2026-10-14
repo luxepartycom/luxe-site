@@ -24,7 +24,7 @@ function endMsOf(html) {
   return m ? Number(m[1]) : 0;
 }
 function open(html, nowMs) {
-  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'https://luxepartycom.github.io/luxe-site/' });
+  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'https://luxepartytokyo.com/' });
   const w = dom.window;
   // Date.now() を固定してからページのスクリプトを実行する
   w.eval('Date.now = function(){ return ' + nowMs + '; };');

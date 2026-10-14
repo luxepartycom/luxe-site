@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-08-10T07:32:46.297Z",
+  "generatedAt": "2026-10-14T06:29:08.622Z",
   "config": {
     "siteName": "LUXE PARTY TOKYO",
     "brandLine1": "LUXE",
     "brandAccent": "PARTY",
     "brandLine2": "TOKYO",
-    "baseUrl": "https://luxepartycom.github.io/luxe-site/",
+    "baseUrl": "https://luxepartytokyo.com/",
     "ga4Id": "",
     "metaPixelId": "",
     "sns": {
       "instagram": "https://www.instagram.com/luxe_party_tokyo/",
-      "line": "https://lin.ee/zGh0dYy"
+      "line": "https://lin.ee/U7KAuVF"
     }
   },
   "events": [
@@ -30,7 +30,7 @@
       "lead_en": "A private resort for one night, in the heart of the city.",
       "entryUrl": "https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&type=paid",
       "published": true,
-      "vipUrl": "https://lin.ee/zGh0dYy",
+      "vipUrl": "https://lin.ee/U7KAuVF",
       "heroVideo": "videos/hero.mp4",
       "venue_en": "Kabukicho Tower 5F, Pool Area"
     },

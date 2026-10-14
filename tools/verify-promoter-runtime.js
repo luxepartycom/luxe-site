@@ -31,7 +31,7 @@ if (!ON_SALE) console.log("  ※ 直近イベントは終了済み。VIP導線�
 function open(search) {
   const dom = new JSDOM(HTML, {
     runScripts: 'dangerously',
-    url: 'https://luxepartycom.github.io/luxe-site/p/' + search,
+    url: 'https://luxepartytokyo.com/p/' + search,
     beforeParse(w) { w.Date.now = function () { return DURING; }; }
   });
   return dom;
@@ -91,7 +91,7 @@ console.log('\n── 別名パラメータ・記号入りの名前 ────
 console.log('\n── 回遊（サイト内リンク経由での保持）─────────────');
 {
   // 1度 ?n= 付きで開いた後、パラメータ無しで開いても保持されるか（同一オリジンの保存領域）
-  const dom = new JSDOM(HTML, { runScripts: 'dangerously', url: 'https://luxepartycom.github.io/luxe-site/p/?n=' + encodeURIComponent('保持太郎') });
+  const dom = new JSDOM(HTML, { runScripts: 'dangerously', url: 'https://luxepartytokyo.com/p/?n=' + encodeURIComponent('保持太郎') });
   const store = dom.window.sessionStorage.getItem('luxe_promoter');
   A('名前が保持領域に入る', store === '保持太郎');
   dom.window.close();

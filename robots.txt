@@ -6,4 +6,4 @@ Disallow: /en/invite/
 Disallow: /p/
 Disallow: /en/p/
 
-Sitemap: https://luxepartycom.github.io/luxe-site/sitemap.xml
+Sitemap: https://luxepartytokyo.com/sitemap.xml

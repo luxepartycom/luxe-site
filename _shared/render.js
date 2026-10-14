@@ -36,7 +36,7 @@ function lines(raw) {
 /* UI文言の対訳表。日本語と英語で共通の骨格を持つ。 */
 var UI_STRINGS = {
   ja: {
-    entry: 'チケットを購入する', entryFree: '無料で申し込む', vip: 'VIPの詳細はこちら', pastEvents: '過去のイベント', currentEvent: '開催中のイベント',
+    entry: 'チケットを購入する', entryFree: '無料で申し込む', lineAdd: 'LINEで友だち追加して詳細を受け取る', lineAddShort: 'LINEで詳細を受け取る', vip: 'VIPの詳細はこちら', pastEvents: '過去のイベント', currentEvent: '開催中のイベント',
     prevLabel: '前回のイベント', viewNight: 'この夜を見る', comingSoon: '近日発表',
     attention: '注意事項', privacy: 'プライバシーポリシー', tokusho: '特定商取引法に基づく表記',
     archiveEyebrow: 'Archive', archiveTitle: '過去開催<em>イベント</em>', archiveEmpty: 'まだ記録がありません。',
@@ -46,7 +46,7 @@ var UI_STRINGS = {
     archiveSub: function (n) { return n + '回分の記録。'; }
   },
   en: {
-    entry: 'BUY TICKET', entryFree: 'RSVP FREE', vip: 'VIP DETAILS', pastEvents: 'Past Events', currentEvent: 'Current Event',
+    entry: 'BUY TICKET', entryFree: 'RSVP FREE', lineAdd: 'ADD US ON LINE', lineAddShort: 'ADD ON LINE', vip: 'VIP DETAILS', pastEvents: 'Past Events', currentEvent: 'Current Event',
     prevLabel: 'Previous Event', viewNight: 'View this night', comingSoon: 'Coming soon',
     attention: 'House Rules', privacy: 'Privacy Policy', tokusho: 'Commercial Transactions',
     archiveEyebrow: 'Archive', archiveTitle: 'Past <em>Events</em>', archiveEmpty: 'No records yet.',
@@ -64,6 +64,34 @@ function loc(obj, field, lang) {
     if (v != null && String(v).trim() !== '') return v;
   }
   return obj[field];
+}
+
+/* ---------- 導線を公式LINEの友だち追加に一本化するモード（2026-10-14 追加）----------
+   ev.ctaMode = "line" のとき、チケット購入・VIP申込の導線を出さず、全CTAを LINE へ向ける。
+   遷移先は ev.lineUrl（そのイベント専用の追加URL）→ ctx.lineUrl（config.sns.line）の順。
+   空・その他の値は従来どおり（既存イベントの出力は変えない）。 */
+function isLineMode(ev) {
+  return String((ev && ev.ctaMode) || '').trim().toLowerCase() === 'line';
+}
+function lineHref(ev, ctx) {
+  return String((ev && ev.lineUrl) || (ctx && ctx.lineUrl) || '').trim();
+}
+function lineAttrs(pos) {
+  return ' data-cta="line" data-cta-pos="' + pos + '"';
+}
+/* LINE ボタンのクリック計測。line モードのページにだけ出す（既存ページの出力を変えないため）。
+   計測IDが無い・preview(noindex) では出さない。リスナーは1ページ1つ・1クリックにつき各1回。 */
+function lineTrackingHtml(ctx) {
+  if (ctx.noindex) return '';
+  var ga4 = ctx.ga4Id && /^[\w-]+$/.test(ctx.ga4Id);
+  var px = ctx.metaPixelId && /^\d+$/.test(ctx.metaPixelId);
+  if (!ga4 && !px) return '';
+  return '<script>(function(){if(window.__luxeLineTrack)return;window.__luxeLineTrack=1;' +
+    'document.addEventListener("click",function(e){var a=e.target&&e.target.closest&&e.target.closest(\'[data-cta="line"]\');if(!a)return;' +
+    'var p=a.getAttribute("data-cta-pos");if(!/^(hero|header|sticky|entry)$/.test(p||""))p="other";' +
+    (ga4 ? 'try{if(window.gtag)gtag("event","line_click",{position:p});}catch(_){}' : '') +
+    (px ? 'try{if(window.fbq)fbq("trackCustom","LineClick",{position:p});}catch(_){}' : '') +
+    '},true);})();</script>';
 }
 
 /* ページ共通の i18n 派生値（base はサイトルート、suffix は言語ルート以下のパス）。 */
@@ -280,6 +308,13 @@ function renderBlocks(blocks, ev, ctx) {
       var isIg = /instagram\.com/.test(em);
       inner = '<div class="embed' + (isIg ? ' embed-ig' : '') + '"><iframe src="' + esc(em) + '" loading="lazy" allowfullscreen scrolling="no" title="' + esc(bTitle || (lang === 'en' ? 'Video' : '動画')) + '"></iframe></div>';
 
+    } else if (type === 'entry' && isLineMode(ev)) {
+      // LINE モード：入力された申込リンクは使わず、必ず LINE へ向ける（申込導線を残さない）
+      var lhref = lineHref(ev, ctx);
+      if (!lhref) return;
+      inner = (bBody ? '<div class="body-copy"><p>' + lines(bBody).join('</p><p>') + '</p></div>' : '') +
+        '<div class="hero-cta"><a class="btn btn-fill" href="' + esc(lhref) + '" target="_blank" rel="noopener"' + lineAttrs('entry') + '>' + esc(T.lineAdd) + '</a></div>';
+
     } else if (type === 'entry') {
       var href = String(b.link || '').trim();
       if (!href) return;
@@ -370,20 +405,27 @@ function renderEventPage(tpl, ev, blocks, ctx) {
   // 招待版は「無料で申し込む / RSVP FREE」ラベル。本編は通常の購入CTA。
   var ctaText = ctx.invite ? t.entryFree : t.entry;
 
+  var line = isLineMode(ev);
+  var lUrl = line ? lineHref(ev, ctx) : '';
   var heroCta = '';
-  if (!past && ev.entryUrl) {
+  if (!past && line && lUrl) {
+    heroCta = '<a class="btn btn-fill" href="' + esc(lUrl) + '" target="_blank" rel="noopener"' + lineAttrs('hero') + '>' + esc(t.lineAdd) + '</a>';
+  } else if (!past && !line && ev.entryUrl) {
     heroCta = '<a class="btn btn-fill" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">' + esc(ctaText) + '</a>';
   }
   heroCta += '<a class="btn btn-line" href="' + i.langRoot + 'archive/">' + esc(t.pastEvents) + '</a>';
 
-  var headerCta = (!past && ev.entryUrl)
+  var headerCta = (!past && line && lUrl)
+    ? '<a class="cta-mini" href="' + esc(lUrl) + '" target="_blank" rel="noopener"' + lineAttrs('header') + '>LINE</a>'
+    : (!past && !line && ev.entryUrl)
     ? '<a class="cta-mini" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">' + (ctx.invite ? 'RSVP' : 'TICKET') + '</a>'
     : '<a class="cta-mini" href="' + i.langRoot + 'archive/">ARCHIVE</a>';
 
   // 常時表示のCTAバー（開催予定のときだけ・一般エントリー＋VIP）
   var stickyBtns = '';
-  if (!past && ev.entryUrl) stickyBtns += '<a class="scta-btn scta-fill" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">' + esc(ctaText) + '</a>';
-  if (!past && ev.vipUrl && !ctx.invite) stickyBtns += '<a class="scta-btn scta-line" href="' + esc(ev.vipUrl) + '" target="_blank" rel="noopener">' + esc(t.vip) + '</a>';
+  if (!past && line && lUrl) stickyBtns += '<a class="scta-btn scta-fill" href="' + esc(lUrl) + '" target="_blank" rel="noopener"' + lineAttrs('sticky') + '>' + esc(t.lineAddShort) + '</a>';
+  if (!past && !line && ev.entryUrl) stickyBtns += '<a class="scta-btn scta-fill" href="' + esc(ev.entryUrl) + '" target="_blank" rel="noopener">' + esc(ctaText) + '</a>';
+  if (!past && !line && ev.vipUrl && !ctx.invite) stickyBtns += '<a class="scta-btn scta-line" href="' + esc(ev.vipUrl) + '" target="_blank" rel="noopener">' + esc(t.vip) + '</a>';
   var stickyCta = stickyBtns
     ? '<div class="sticky-cta"><div class="scta-inner"><span class="scta-title">' + esc(String(title).split('|')[0].trim()) + '</span><span class="scta-btns">' + stickyBtns + '</span></div></div>'
     : '';
@@ -405,7 +447,8 @@ function renderEventPage(tpl, ev, blocks, ctx) {
     if (ev.venue) ld.location = { '@type': 'Place', name: ev.venue, address: { '@type': 'PostalAddress', addressLocality: '東京', addressCountry: 'JP' } };
     if (ogpFull) ld.image = [ogpFull];
     // 招待版は無料・限定公開のため価格オファーを構造化データに出さない
-    if (ev.entryUrl && !ctx.invite) ld.offers = { '@type': 'AggregateOffer', lowPrice: '5000', highPrice: '20000', priceCurrency: 'JPY', url: ev.entryUrl, availability: 'https://schema.org/InStock' };
+    // LINE モードは販売していないので価格・申込URLを出さない
+    if (!line && ev.entryUrl && !ctx.invite) ld.offers = { '@type': 'AggregateOffer', lowPrice: '5000', highPrice: '20000', priceCurrency: 'JPY', url: ev.entryUrl, availability: 'https://schema.org/InStock' };
     jsonld = '<script type="application/ld+json">' + JSON.stringify(ld).replace(/</g, '\\u003c') + '</script>';
   }
 
@@ -432,7 +475,7 @@ function renderEventPage(tpl, ev, blocks, ctx) {
       if (hv) return '<div class="hero-media"><video class="hero-vid" src="' + esc(hv) + '" autoplay muted loop playsinline preload="metadata"' + (heroUrl ? ' poster="' + esc(heroUrl) + '"' : '') + '></video></div>';
       return heroUrl ? '<div class="hero-media"><img src="' + esc(heroUrl) + '" alt="' + esc(heroRef.alt) + '" fetchpriority="high" decoding="async"></div>' : '';
     })(),
-    '{{ANALYTICS}}': analyticsHtml(ctx),
+    '{{ANALYTICS}}': analyticsHtml(ctx) + (line ? lineTrackingHtml(ctx) : ''),
     '{{ENDED_BADGE}}': past ? '<span class="ended-badge">ENDED</span>' : '',
     '{{INVITE_BADGE}}': ctx.invite ? '<span class="invite-badge">関係者ご招待 <span>/ Invitation</span></span>' : '',
     '{{EDITION}}': esc(ev.edition || ''),
@@ -607,6 +650,7 @@ if (typeof module !== 'undefined' && module.exports) {
     eventEndMs: eventEndMs, renderBlocks: renderBlocks, renderEventPage: renderEventPage,
     renderArchivePage: renderArchivePage, snsHtml: snsHtml,
     render404Page: render404Page, renderSitemap: renderSitemap, renderRobots: renderRobots,
-    analyticsHtml: analyticsHtml, absBasePath: absBasePath
+    analyticsHtml: analyticsHtml, absBasePath: absBasePath,
+    isLineMode: isLineMode, lineHref: lineHref, lineTrackingHtml: lineTrackingHtml
   };
 }

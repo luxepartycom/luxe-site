@@ -5,7 +5,25 @@ const fs = require('fs');
 const path = require('path');
 const R = require('../_shared/render.js');
 
+const os = require('os');
 const ROOT = path.join(__dirname, '..');
+/* 出力先。既定はリポジトリ直下（従来どおり）。検査用に LUXE_OUT で一時ディレクトリへ逃がせる。
+   読み取り元（テンプレート・assets・入力）は常に ROOT。消してよい場所以外は拒否する。 */
+const OUT = (function () {
+  const v = process.env.LUXE_OUT;
+  if (!v) return ROOT;
+  const o = path.resolve(v);
+  const tmp = fs.realpathSync(os.tmpdir());
+  // 実在する最も近い祖先を実体パスに解いてから判定する（symlink で外へ逃げる指定を止める）
+  let anc = o, rest = '';
+  while (!fs.existsSync(anc)) { rest = path.join(path.basename(anc), rest); anc = path.dirname(anc); }
+  const real = path.join(fs.realpathSync(anc), rest);
+  if (!real.startsWith(tmp + path.sep)) {
+    console.error('LUXE_OUT は一時ディレクトリ配下のみ指定できる: ' + o + ' (実体: ' + real + ')');
+    process.exit(2);
+  }
+  return real;
+})();
 const src = process.argv[2] || path.join(ROOT, 'sample/sheet-sample.json');
 const data = JSON.parse(fs.readFileSync(src, 'utf8'));
 const cfg = data.config;
@@ -37,6 +55,19 @@ const prevEvent = past
   .filter(e => !current || e.id !== current.id)
   .sort((a, b) => String(b.date).localeCompare(String(a.date)))[0] || null;
 
+/* LINE モードのイベントは遷移先が必須。生成ディレクトリを消す前に止める（途中で落ちて空のサイトを残さない） */
+const lineUrlDefault = (cfg.sns && cfg.sns.line) || '';
+for (const e of published) {
+  if (!R.isLineMode(e)) continue;
+  const u = R.lineHref(e, { lineUrl: lineUrlDefault });
+  let okUrl = false;
+  try { const x = new URL(u); okUrl = /^https:\/\/[^\/]/.test(u) && x.protocol === 'https:' && !!x.hostname; } catch (e) {}
+  if (!okUrl) {
+    console.error('ctaMode=line なのに LINE の遷移先が無い/https でない: ' + e.id + ' -> "' + u + '"');
+    process.exit(1);
+  }
+}
+
 const tplEvent = fs.readFileSync(path.join(ROOT, '_templates/event.html'), 'utf8');
 const tplArchive = fs.readFileSync(path.join(ROOT, '_templates/archive.html'), 'utf8');
 const tpl404 = fs.readFileSync(path.join(ROOT, '_templates/404.html'), 'utf8');
@@ -49,6 +80,7 @@ function blocksFor(id) {
 function ctxFor(base, suffix, lang, opts) {
   return Object.assign({
     base, suffix, lang, now, assets, siteName: cfg.siteName, baseUrl: cfg.baseUrl, brandHtml, snsHtml,
+    lineUrl: lineUrlDefault,
     ga4Id: cfg.ga4Id || '', metaPixelId: cfg.metaPixelId || '', prevEvent,
     pastEvents: past
       .filter(e => !current || e.id !== current.id)
@@ -183,7 +215,8 @@ function eventEndMsFor(ev) {
 function endedSnippet(ev, lang) {
   const endMs = eventEndMsFor(ev);
   if (!endMs) return '';
-  const line = (cfg.sns && cfg.sns.line) || '';
+  // イベント専用の追加URLがあれば終了後もそれを使う（経路別の数を途切れさせない）
+  const line = (ev && ev.lineUrl) || (cfg.sns && cfg.sns.line) || '';
   const ig   = (cfg.sns && cfg.sns.instagram) || '';
   const T = lang === 'en'
     ? { notice:'This event has ended. Please stay tuned for the next one.',
@@ -303,8 +336,21 @@ function withPromoterRuntime(html) {
     ? html.replace('</body>', PROMOTER_RUNTIME_SNIPPET + '\n</body>')
     : html + PROMOTER_RUNTIME_SNIPPET;
 }
+/* LINE モード時の派生URL（/invite/・/p/）。配布済みのURLを404にせず、トップへ送るだけのページにする。
+   申込リンクも重複コンテンツも残さない。計測はトップ側で行われる。 */
+function redirectHtml(to, lang) {
+  const top = cfg.baseUrl + (lang === 'en' ? 'en/' : '');
+  return '<!doctype html><html lang="' + (lang === 'en' ? 'en' : 'ja') + '"><head><meta charset="utf-8">' +
+    '<meta name="robots" content="noindex, follow">' +
+    '<meta http-equiv="refresh" content="0; url=' + to + '">' +
+    '<link rel="canonical" href="' + R.esc(top) + '">' +
+    '<title>' + R.esc(cfg.siteName) + '</title>' +
+    '<script>location.replace(' + JSON.stringify(to) + ');</script></head>' +
+    '<body><a href="' + to + '">' + R.esc(cfg.siteName) + '</a></body></html>';
+}
+
 function write(rel, html) {
-  const p = path.join(ROOT, rel);
+  const p = path.join(OUT, rel);
   fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, html);
   console.log('  wrote', rel, '(' + Math.round(html.length / 1024) + 'KB)');
@@ -312,7 +358,7 @@ function write(rel, html) {
 
 // 生成ディレクトリを一旦クリーン（削除済みイベントの残骸ページを残さない）
 ['events', 'en', 'archive', 'invite', 'p'].forEach(function (d) {
-  try { fs.rmSync(path.join(ROOT, d), { recursive: true, force: true }); } catch (e) {}
+  try { fs.rmSync(path.join(OUT, d), { recursive: true, force: true }); } catch (e) {}
 });
 
 console.log('building…');
@@ -341,6 +387,17 @@ for (const L of LANGS) {
 
   /* 関係者向け無料招待（限定公開・noindex・sitemap非掲載・robotsでDisallow）。
      本編と同一コンテンツ／演出で、CTA=無料で申し込む・entryUrl=type=free・料金表なし・VIP導線なし・招待バッジあり。 */
+  if (current && R.isLineMode(current)) {
+    /* LINE モード：招待・プロモーター用ページは作らない（2026-10-14 オーナー方針）。
+       旧URLは言語トップへ転送する。 */
+    const toTop = '../';   // /invite/ → 言語トップ（ja=/、en=/en/）
+    write(`${L.prefix}invite/index.html`, redirectHtml(toTop, L.lang));
+    write(`${L.prefix}p/index.html`, redirectHtml(toTop, L.lang));
+    for (const P of PROMOTERS) {
+      write(`${L.prefix}invite/${P.slug}/index.html`, redirectHtml('../' + toTop, L.lang));
+      write(`${L.prefix}p/${P.slug}/index.html`, redirectHtml('../' + toTop, L.lang));
+    }
+  } else {
   if (inviteEvent) {
     /* /invite/?n=<名前> でも紹介者を固定できるようにする（/p/ と同じ実行時方式）。
        これで PROMOTERS に載っていない人へも、その場で無料招待URLを発行できる。
@@ -372,6 +429,7 @@ for (const L of LANGS) {
        これにより新しいプロモーターの追加にビルドもデプロイも要らなくなる。 */
     write(`${L.prefix}p/index.html`, withEndedRuntime(withPromoterRuntime(
       R.renderEventPage(tplEvent, promoterEventFor(''), promoterBlocksFor(current.id, ''), ctxFor(L.baseArchive, 'p/', L.lang, { noindex: true }))), current, L.lang));
+  }
   }
 }
 
