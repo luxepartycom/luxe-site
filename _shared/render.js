@@ -357,6 +357,10 @@ function renderBlocks(blocks, ev, ctx) {
       inner = (bBody ? '<div class="body-copy"><p>' + lines(bBody).join('</p><p>') + '</p></div>' : '') +
         '<div class="hero-cta"><a class="btn btn-fill" href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(ctx.invite ? T.entryFree : T.entry) + '</a></div>';
 
+    } else if (type === 'pastevents' && /^events\//.test(ctx.suffix || '') && isPast(ev, ctx.now)) {
+      // 終わったイベントの個別ページ（アーカイブ）には CONCEPT を載せない（2026-10-17 オーナー指示）
+      return;
+
     } else if (type === 'pastevents') {
       // 任意の説明文（bBody）＋過去イベントの写真カード帯を自動生成。
       // コンセプト説明の配下に「どんなイベントか」を実例で並べる用途。各カードは詳細ページへリンク。

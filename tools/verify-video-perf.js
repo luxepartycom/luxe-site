@@ -108,5 +108,16 @@ for (const file of ['index.html', 'archive/index.html']) {
   ok(links.length === past && links.every(h => fs.existsSync(path.join(ROOT, h, 'index.html'))), 'NEWS の過去イベントのリンク先が全部ある');
 }
 
+// 終わったイベントの個別ページには CONCEPT（過去イベントの帯）を載せない。トップには載せる（2026-10-17）
+{
+  const top = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  ok(/class="pastgrid"/.test(top), 'トップには CONCEPT の過去イベントがある');
+  for (const id of fs.readdirSync(path.join(ROOT, 'events'))) {
+    const h = fs.readFileSync(path.join(ROOT, 'events', id, 'index.html'), 'utf8');
+    const m = h.match(/var END = (\d+)/);
+    if (m && +m[1] < Date.now()) ok(!/class="pastgrid"/.test(h) && !/id="concept"/.test(h), id + '（終了済み）に CONCEPT が無い');
+  }
+}
+
 console.log(fail ? `—— 失敗 ${fail}件 / 合格 ${pass}件 ——` : `—— 全合格 ✅（${pass}件）——`);
 process.exit(fail ? 1 : 0);
