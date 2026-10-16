@@ -98,5 +98,15 @@ for (const file of ['index.html', 'archive/index.html']) {
   }
 }
 
+// NEWS に過去のイベントが自動で全部並び、各ページへリンクする（2026-10-16）
+{
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const past = (html.match(/class="news-item news-past"/g) || []).length;
+  const cards = (html.match(/class="pastcard-title"/g) || []).length;
+  ok(past > 0 && past === cards, 'NEWS の過去イベントの行数＝過去イベントのカード数 (' + past + '/' + cards + ')');
+  const links = [...html.matchAll(/class="news-item news-past">[\s\S]*?href="([^"]+)"/g)].map(m => m[1]);
+  ok(links.length === past && links.every(h => fs.existsSync(path.join(ROOT, h, 'index.html'))), 'NEWS の過去イベントのリンク先が全部ある');
+}
+
 console.log(fail ? `—— 失敗 ${fail}件 / 合格 ${pass}件 ——` : `—— 全合格 ✅（${pass}件）——`);
 process.exit(fail ? 1 : 0);

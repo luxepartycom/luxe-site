@@ -310,6 +310,20 @@ function renderBlocks(blocks, ev, ctx) {
           (p[1] ? '<span class="news-label">' + esc(p[1]) + '</span>' : '') +
           '<span class="news-text">' + esc(p[2] || '') + '</span></div>';
       });
+      // withPast：過去のイベントを「開催」のお知らせとして自動で並べる（新しい順・各イベントのページへリンク）。2026-10-16
+      if (b.withPast) {
+        var nRoot = ctx.base + (lang === 'en' ? 'en/' : '');
+        (ctx.pastEvents || []).forEach(function (pe) {
+          var pt = String(loc(pe, 'title', lang) || '').split('|').join(' ');
+          var pv = loc(pe, 'venue', lang);
+          if (String(pv || '').trim() === pt.trim()) pv = '';   // 会場名＝イベント名なら重ねない
+          var txt = lang === 'en' ? pt + (pv ? ' — held at ' + pv : '') : pt + (pv ? ' — ' + pv + 'にて開催' : ' — 開催');
+          items2.push('<div class="news-item news-past">' +
+            '<span class="news-date">' + esc(jpDate(pe)) + '</span>' +
+            '<span class="news-label">EVENT</span>' +
+            '<a class="news-text" href="' + nRoot + 'events/' + esc(pe.id) + '/">' + esc(txt) + ' →</a></div>');
+        });
+      }
       if (!items2.length) return;
       inner = '<div>' + items2.join('') + '</div>';
 

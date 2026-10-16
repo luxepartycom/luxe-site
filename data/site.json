@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-16T14:49:09.748Z",
+  "generatedAt": "2026-10-16T14:55:34.540Z",
   "config": {
     "siteName": "LUXE PARTY TOKYO",
     "brandLine1": "LUXE",
@@ -260,7 +260,8 @@
       "title": "NEWS|お知らせ",
       "title_en": "NEWS|News",
       "body": "2026.10.14 | INFO | 開催決定 — 11/2(月) RAISE GINZA にて LEATHER FASHION PARTY 開催",
-      "body_en": "2026.10.14 | INFO | Announced — LEATHER FASHION PARTY, Mon Nov 2 at RAISE GINZA"
+      "body_en": "2026.10.14 | INFO | Announced — LEATHER FASHION PARTY, Mon Nov 2 at RAISE GINZA",
+      "withPast": true
     },
     {
       "eventId": "2026-11-02-leather-fashion-party",
