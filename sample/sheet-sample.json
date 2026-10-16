@@ -23,14 +23,14 @@
       "open": "18:00",
       "close": "21:30",
       "venue": "歌舞伎町タワー 5F プールエリア",
-      "heroImage": "hero.jpg|サンセットに染まるプールサイド",
+      "heroImage": "poster.jpg|LUXE POOL PARTY",
       "ogpImage": "https://drive.google.com/file/d/1QqZOz8np21UsQa2hgDZRm8s1u5QxpDz0/view",
       "lead": "都会の真ん中に現れる、一夜限りのプライベートリゾート。",
       "lead_en": "A private resort for one night, in the heart of the city.",
       "entryUrl": "https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&type=paid",
       "published": true,
       "vipUrl": "https://lin.ee/U7KAuVF",
-      "heroVideo": "videos/hero.mp4",
+      "heroVideo": "videos/past-pool-0809.mp4",
       "venue_en": "Kabukicho Tower 5F, Pool Area"
     },
     {
@@ -87,10 +87,22 @@
       "venue_en": "RAISE GINZA (GINZA NOVO 6F)",
       "heroImage": "hero.jpg|LEATHER FASHION PARTY — RAISE GINZA",
       "ogpImage": "ogp.jpg",
-      "heroVideo": "videos/hero-next.mp4",
+      "heroVideo": "videos/hero-1102.mp4",
       "lead": "「銀座の夜を、レザーで纏う」LUXE PARTY × RAISE PRESENTS。一夜限りのファッションパーティー。",
       "lead_en": "\"Wear the Ginza night in leather.\" LUXE PARTY × RAISE PRESENTS. A one-night fashion party.",
       "ctaMode": "line",
+      "published": true
+    },
+    {
+      "id": "2025-07-20-water-terrace",
+      "title": "Cafe & Bar Water Terrace",
+      "title_en": "Cafe & Bar Water Terrace",
+      "date": "2025-07-20",
+      "day": "SUN",
+      "venue": "Cafe & Bar Water Terrace",
+      "venue_en": "Cafe & Bar Water Terrace",
+      "heroImage": "hero.jpg|Cafe & Bar Water Terrace",
+      "heroVideo": "videos/past-waterterrace-250720.mp4",
       "published": true
     }
   ],
