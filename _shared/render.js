@@ -272,7 +272,9 @@ function renderBlocks(blocks, ev, ctx) {
       });
       // 出演者が未入力ならセクションごと非表示（素材が入れば自動でカード表示）
       if (!arts.length) return;
-      inner = '<div class="lineup' + (anyPhoto ? ' lineup-cards' : '') + '">' + arts.join('') + '</div>';
+      // variant "flyer"：写真が告知画像（名前・日付入り）のとき、切らずに全体を見せる（2026-10-16）
+      var flyerCards = String(b.variant || '').trim().toLowerCase() === 'flyer';
+      inner = '<div class="lineup' + (anyPhoto ? ' lineup-cards' : '') + (anyPhoto && flyerCards ? ' lineup-flyer' : '') + '">' + arts.join('') + '</div>';
 
     } else if (type === 'table') {
       // variant "vip"：一段格上のカード。LINE の遷移先があればカード全体を問い合わせリンクにする（2026-10-14）

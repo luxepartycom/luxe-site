@@ -126,6 +126,11 @@ body{overflow-x:hidden}
 .lineup-cards .artist:hover .artist-photo{transform:scale(1.06)}
 .lineup-cards .artist-name{font-size:clamp(16px, 2.4vw, 23px)}
 .lineup-cards .artist-role{white-space:normal; margin-top:-4px}
+/* 告知画像そのものを並べる出演者カード：4:5 のまま全体を見せる（名前・日付を切らない） */
+.lineup-flyer{grid-template-columns:repeat(auto-fill, minmax(min(100%, 220px), 1fr))}
+.lineup-flyer .artist-photo-wrap{aspect-ratio:4/5}
+.lineup-flyer .artist-photo{object-fit:contain}
+.lineup-flyer .artist:hover .artist-photo{transform:none}
 
 .tables{display:grid; gap:14px}
 @media(min-width:820px){ .tables{grid-template-columns:repeat(2,1fr); gap:18px} }

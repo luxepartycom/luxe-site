@@ -161,7 +161,7 @@
       "title": "TICKET|チケットのご購入",
       "body": "フリードリンク付。\n20歳未満の方はご入場いただけません。当日は身分証をご持参ください。",
       "link": "https://entry.luxepartytokyo.com/index.html?e=EV-MS45773V&type=paid",
-      "published": true,
+      "published": false,
       "title_en": "TICKET|Buy Tickets",
       "body_en": "Free drinks included.\nEntry is restricted to guests aged 20 and over. Please bring a photo ID on the day."
     },
@@ -188,8 +188,8 @@
       "eventId": "2026-08-09-luxe-pool-party",
       "order": 5,
       "type": "text",
-      "title": "THE NIGHT|次回開催 — LUXE POOL PARTY",
-      "title_en": "THE NIGHT|Next Event — LUXE POOL PARTY",
+      "title": "THE NIGHT|LUXE POOL PARTY",
+      "title_en": "THE NIGHT|LUXE POOL PARTY",
       "body": "8月9日（日）— LUXE POOL PARTY\n歌舞伎町タワー5F・プールエリアにて開催。\n\nサンセットに染まるプールサイドで、ファッション・音楽・特別な出会いが交わる一夜。最高峰の音楽に包まれる極上のひとときを。\n\nDRESS CODE — Resort / White / Swimwear",
       "published": true,
       "image": "https://drive.google.com/file/d/1QqZOz8np21UsQa2hgDZRm8s1u5QxpDz0/view|LUXE POOL PARTY フライヤー",
@@ -222,11 +222,12 @@
       "published": true,
       "order": 6,
       "type": "lineup",
-      "title": "LINE UP|出演者（近日発表）",
-      "title_en": "LINE UP|Line-up (Coming Soon)",
-      "body": "RINA | DJ |  | https://drive.google.com/file/d/1X6P4bBO7WZlGJIBuMjd-DZvtzPuG14yR/view\nJUICY AYA | DJ |  | https://drive.google.com/file/d/1mRyhjxu40tepydLfY4t1N0jCHwmMsk2A/view\nMYLLY EYE | DJ |  | https://drive.google.com/file/d/1O5oK0sq7fYQZT2uqdJoeMuR_LHi_RuyF/view\nPEACH | DJ |  | https://drive.google.com/file/d/1FSTgxGFsPQPDwI2zVjDFSpGjUwIPgmt-/view\nMOMO | CHAMPAGNE GIRL |  | https://drive.google.com/file/d/1TeleVa5TgsaD-0WM6jmmFgEWB45Fjnjr/view\nMAAYA | SPECIAL DANCER |  | https://drive.google.com/file/d/1L43NrrULY8b9OX7cm99VgIT8wTcq4Uqd/view\nKARIN | DANCER |  | https://drive.google.com/file/d/1PbY5be6FT6YNZQwYUkvQO55pFAXZaJw6/view\nFUKA | DANCER |  | https://drive.google.com/file/d/1kugbCdVkULx8w1429GA0CrNFV9MzYndT/view\nANNA | DANCER |  | https://drive.google.com/file/d/1hnVnPqLo-A6lkre-iAPggA9fsd0k0gHz/view\nVIV | DANCER |  | https://drive.google.com/file/d/1S-lrZQIw8lO4EFnKyOvpcLKfnYN_qhQf/view\nMIYU | DANCER |  | https://drive.google.com/file/d/1N_AMQ6-PKX0uQqzT2fcReZ8pawEG8zjK/view\nKURUMI | DANCER |  | https://drive.google.com/file/d/1BTBcmen8iwfwfJeM_kC6Z0lKcOusqtuu/view",
-      "subtitle": "PREVIOUS|前回の出演者はこちら",
-      "subtitle_en": "PREVIOUS|Previous line-up"
+      "title": "LINE UP|出演者",
+      "title_en": "LINE UP|Line-up",
+      "body": "MIYU | DANCER |  | https://drive.google.com/file/d/1siksvx8WQMGPHz8dQm3T09AICYCS6LFD/view\nVIVI | DANCER |  | https://drive.google.com/file/d/10-Fb2_DH9B4q6OuccjUzrI2-JSdJjkFZ/view\nMAAYA | DANCER |  | https://drive.google.com/file/d/14bsXJOkhtEBlIgEDYCEz8alIrl_0xL6B/view\nKURUMI | DANCER |  | https://drive.google.com/file/d/1VdjbVbkPwAdIbTHUA1Ye_dNMGwB0xwRM/view\nKANON | DANCER |  | https://drive.google.com/file/d/1gzcTa47IhPBkwfXtKAAMtno5RgkZIksn/view\nKANAN | DANCER |  | https://drive.google.com/file/d/16jYkxrafaDNfmjcnl194zgeWp3DdRcMa/view\nYUZU | DANCER |  | https://drive.google.com/file/d/1n8-4VFr8X8hy03jQ7Y7UulcJ71rEO3jf/view\nANNA | DANCER |  | https://drive.google.com/file/d/1UsLcUG-wx0_KFgSOEfo2e9QEwZYD7R5w/view\nYUI | DANCER |  | https://drive.google.com/file/d/1CxY1gfMG_o6EJ2_NAwj6ArysbZ4abMyk/view",
+      "subtitle": "DANCER|ダンサー",
+      "subtitle_en": "DANCER|Dancers",
+      "variant": "flyer"
     },
     {
       "eventId": "2026-11-02-leather-fashion-party",
@@ -310,6 +311,16 @@
       "variant": "vip",
       "body": "VIP SEAT | RAISE GINZA | ASK | 料金・空き状況のご確認とご予約は、公式LINEで承ります",
       "body_en": "VIP SEAT | RAISE GINZA | ASK | For prices, availability and reservations, contact us on our official LINE"
+    },
+    {
+      "eventId": "2026-11-02-leather-fashion-party",
+      "published": true,
+      "order": 6.1,
+      "type": "text",
+      "subtitle": "DJ|DJ",
+      "subtitle_en": "DJ|DJ",
+      "body": "近日発表",
+      "body_en": "Coming soon"
     }
   ]
 }

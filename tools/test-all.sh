@@ -12,6 +12,8 @@ TK=$(mktemp -d "$LOG/luxe-ticket.XXXXXX") || exit 1
 node -e '
 const d = JSON.parse(require("fs").readFileSync("sample/sheet-sample.json", "utf8"));
 d.events = d.events.filter(e => String(e.ctaMode || "").toLowerCase() !== "line");
+// チケット販売型の見本として、終了済みで外したチケットの区画も検査用データでは戻す
+d.blocks.forEach(b => { if (b.type === "entry") b.published = true; });
 require("fs").writeFileSync(process.argv[1], JSON.stringify(d));' "$TK/in.json" || exit 1
 mkdir -p "$TK/out" && LUXE_OUT="$TK/out" node tools/build-local.js "$TK/in.json" > /dev/null || { echo "✗ build-local (ticket)"; exit 1; }
 # 生成しない静的ファイル（CSS・画像・法務ページ・favicon）も揃えて、リンク検査を本物と同じ条件にする
