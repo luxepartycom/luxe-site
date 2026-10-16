@@ -75,7 +75,10 @@
   if ("IntersectionObserver" in window){
     var io = new IntersectionObserver(function(es){
       es.forEach(function(e){ if(e.isIntersecting){ cascade(e.target); e.target.classList.add("in"); io.unobserve(e.target); } });
-    }, { threshold: .06, rootMargin: "0px 0px -4% 0px" });
+    // 区画の割合（threshold）で判定すると、スマホで縦に長い区画は割合に一度も届かず透明のまま残る（2026-10-16）。
+    // 区画が1pxでも画面に入ったら出す。画面の下を削る rootMargin も付けない
+    // （削るとページ末尾の短い区画が最後までスクロールしても判定範囲に入らず透明のまま残る＝Codex 指摘）。
+    }, { threshold: 0, rootMargin: "0px" });
     document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
   } else {
     document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("in"); });

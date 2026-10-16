@@ -81,5 +81,22 @@ for (const f of ['index.html'].concat(fs.readdirSync(path.join(ROOT, 'events')).
   ok(!m || !/\/\.\.?\//.test(m[1].replace(/^https?:\/\//, '')), f + ' の og:image に ../ が無い');
 }
 
+// 表示アニメ（.reveal）は区画の長さに関係なく発動すること（割合の条件だと縦長の区画が透明のまま残る）
+for (const file of ['index.html', 'archive/index.html']) {
+  const opts = [];
+  const vc = new VirtualConsole();
+  const dom = new JSDOM(fs.readFileSync(path.join(ROOT, file), 'utf8'), { runScripts: 'dangerously', url: 'https://luxepartytokyo.com/', virtualConsole: vc,
+    beforeParse(w) { w.matchMedia = () => ({ matches: false }); w.IntersectionObserver = function (cb, o) { const ob = { cb, o: o || {}, els: [], observe(el) { ob.els.push(el); }, unobserve() {}, disconnect() {} }; opts.push(ob); return ob; }; } });
+  const ob = opts.find(x => x.els.some(e => e.classList && e.classList.contains('reveal')));
+  ok(ob, file + ' 表示アニメの見張りがある');
+  if (ob) {
+    const th = [].concat(ob.o.threshold == null ? 0 : ob.o.threshold);
+    ok(th.every(t => t === 0), file + ' 発動条件が区画の割合に依存しない（threshold 0）');
+    ok(!/-/.test(String(ob.o.rootMargin || '0px')), file + ' 判定範囲を画面より狭めない（末尾の短い区画が出なくならない）');
+    const sec = ob.els[0]; ob.cb([{ target: sec, isIntersecting: true, intersectionRatio: 0.01 }]);
+    ok(sec.classList.contains('in'), file + ' 区画の1%しか見えていなくても表示される');
+  }
+}
+
 console.log(fail ? `—— 失敗 ${fail}件 / 合格 ${pass}件 ——` : `—— 全合格 ✅（${pass}件）——`);
 process.exit(fail ? 1 : 0);
